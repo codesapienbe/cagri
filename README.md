@@ -1,114 +1,125 @@
-# meeloper
+# konum çağrı
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+Bu proje, Spring Boot ile kendi Vaadin uygulamanızı oluşturmak için bir başlangıç noktası olarak kullanılabilir.
+Başlamanız için gerekli tüm yapılandırmayı ve bazı yer tutucu dosyaları içerir.
 
-## Running the application
+## Uygulamayı çalıştırma
 
-The project is a standard Maven project. To run it from the command line,
-type `mvnw` (Windows), or `./mvnw` (Mac & Linux), then open
-http://localhost:8080 in your browser.
+Proje standart bir Maven projesidir. Komut satırından çalıştırmak için,
+mvnw` (Windows) veya `./mvnw` (Mac & Linux) yazın, ardından açın
+Tarayıcınızda http://localhost:8080.
 
-You can also import the project to your IDE of choice as you would with any
-Maven project. Read more on [how to import Vaadin projects to different
-IDEs](https://vaadin.com/docs/latest/flow/guide/step-by-step/importing) (Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
+Ayrıca projeyi herhangi bir IDE'de yaptığınız gibi tercih ettiğiniz IDE'ye aktarabilirsiniz.
+Maven projesi. Daha fazla bilgi için [Vaadin projeleri farklı projelere nasıl aktarılır
+IDE'ler](https://vaadin.com/docs/latest/flow/guide/step-by-step/importing) (Eclipse, IntelliJ IDEA, NetBeans ve VS
+Code).
 
-## Deploying to Production
+## Üretime Dağıtma
 
-To create a production build, call `mvnw clean package -Pproduction` (Windows),
-or `./mvnw clean package -Pproduction` (Mac & Linux).
-This will build a JAR file with all the dependencies and front-end resources,
-ready to be deployed. The file can be found in the `target` folder after the build completes.
+Bir üretim derlemesi oluşturmak için `mvnw clean package -Pproduction` (Windows) çağrısını yapın,
+veya `./mvnw clean package -Pproduction` (Mac ve Linux).
+Bu, tüm bağımlılıkları ve ön uç kaynaklarını içeren bir JAR dosyası oluşturacaktır,
+dağıtılmaya hazırdır. Dosya, derleme tamamlandıktan sonra `target` klasöründe bulunabilir.
 
-Once the JAR file is built, you can run it using
+JAR dosyası oluşturulduktan sonra aşağıdakileri kullanarak çalıştırabilirsiniz
 `java -jar target/meeloper-1.0-SNAPSHOT.jar`
 
-## Project structure
+## Proje yapısı
 
-- `MainLayout.java` in `src/main/java` contains the navigation setup (i.e., the
-  side/top bar and the main menu). This setup uses
-  [App Layout](https://vaadin.com/components/vaadin-app-layout).
-- `views` package in `src/main/java` contains the server-side Java views of your application.
-- `views` folder in `frontend/` contains the client-side JavaScript views of your application.
-- `themes` folder in `frontend/` contains the custom CSS styles.
+- src/main/java` içindeki `MainLayout.java` navigasyon kurulumunu içerir (yani
+  yan/üst çubuk ve ana menü). Bu kurulum şunları kullanır
+  [Uygulama Düzeni](https://vaadin.com/components/vaadin-app-layout).
+- src/main/java` içindeki `views` paketi uygulamanızın sunucu tarafı Java görünümlerini içerir.
+- `frontend/` içindeki `views` klasörü uygulamanızın istemci tarafı JavaScript görünümlerini içerir.
+- frontend/` içindeki `themes` klasörü özel CSS stillerini içerir.
 
-## Useful links
+## Yararlı bağlantılar
 
-- Read the documentation at [vaadin.com/docs](https://vaadin.com/docs).
-- Follow the tutorials at [vaadin.com/tutorials](https://vaadin.com/tutorials).
-- Watch training videos and get certified at [vaadin.com/learn/training](https://vaadin.com/learn/training).
-- Create new projects at [start.vaadin.com](https://start.vaadin.com/).
-- Search UI components and their usage examples at [vaadin.com/components](https://vaadin.com/components).
-- View use case applications that demonstrate Vaadin capabilities
-  at [vaadin.com/examples-and-demos](https://vaadin.com/examples-and-demos).
-- Discover Vaadin's set of CSS utility classes that enable building any UI without custom CSS in
-  the [docs](https://vaadin.com/docs/latest/ds/foundation/utility-classes).
-- Find a collection of solutions to common use cases in [Vaadin Cookbook](https://cookbook.vaadin.com/).
-- Find Add-ons at [vaadin.com/directory](https://vaadin.com/directory).
-- Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/vaadin) or join
-  our [Discord channel](https://discord.gg/MYFq5RTbBn).
-- Report issues, create pull requests in [GitHub](https://github.com/vaadin/platform).
+- vaadin.com/docs](https://vaadin.com/docs) adresindeki belgeleri okuyun.
+- vaadin.com/tutorials](https://vaadin.com/tutorials) adresindeki eğitimleri takip edin.
+- Eğitim videolarını izleyin ve [vaadin.com/learn/training](https://vaadin.com/learn/training) adresinden sertifika
+  alın.
+- start.vaadin.com](https://start.vaadin.com/) adresinde yeni projeler oluşturun.
+- UI bileşenlerini ve kullanım örneklerini [vaadin.com/components](https://vaadin.com/components) adresinde arayın.
+- Vaadin yeteneklerini gösteren kullanım örneği uygulamalarını görüntüleyin
+  vaadin.com/examples-and-demos](https://vaadin.com/examples-and-demos) adresinde bulabilirsiniz.
+- Vaadin'in özel CSS olmadan herhangi bir kullanıcı arayüzü oluşturmayı sağlayan CSS yardımcı sınıfları setini keşfedin
+  docs](https://vaadin.com/docs/latest/ds/foundation/utility-classes).
+- Vaadin Cookbook](https://cookbook.vaadin.com/)'da yaygın kullanım durumlarına yönelik çözümlerin bir koleksiyonunu
+  bulun.
+- Eklentileri [vaadin.com/directory](https://vaadin.com/directory) adresinde bulabilirsiniz.
+- Stack Overflow](https://stackoverflow.com/questions/tagged/vaadin) üzerinden sorularınızı sorun veya
+  Discord kanalımız](https://discord.gg/MYFq5RTbBn).
+- Sorunları bildirin, [GitHub](https://github.com/vaadin/platform)'da çekme istekleri oluşturun.
 
-## Deploying using Docker
+## Docker kullanarak dağıtma
 
-To build the Dockerized version of the project, run
+Projenin Docker'laştırılmış sürümünü derlemek için
 
 ```
 docker build . -t meeloper:latest
 ```
 
-Once the Docker image is correctly built, you can test it locally using
+Docker görüntüsü doğru bir şekilde oluşturulduktan sonra, yerel olarak
 
 ```
 docker run -p 8080:8080 meeloper:latest
 ```
 
-## Deploying using Kubernetes
+## Kubernetes kullanarak dağıtma
 
-We assume here that you have the Kubernetes cluster from Docker Desktop running (can be enabled in the settings).
+Burada Docker Desktop'taki Kubernetes kümesinin çalıştığını varsayıyoruz (ayarlardan etkinleştirilebilir).
 
-First build the Docker image for your application. You then need to make the Docker image available to you cluster. With
-Docker Desktop Kubernetes, this happens automatically. With Minikube, you can run `eval $(minikube docker-env)` and then
-build the image to make it available. For other clusters, you need to publish to a Docker repository or check the
-documentation for the cluster.
+Önce uygulamanız için Docker görüntüsünü oluşturun. Daha sonra Docker görüntüsünü kümeniz için kullanılabilir hale
+getirmeniz gerekir. İle
+Docker Masaüstü Kubernetes, bu otomatik olarak gerçekleşir. Minikube ile `eval $(minikube docker-env)` komutunu
+çalıştırabilir ve ardından
+kullanılabilir hale getirmek için görüntüyü oluşturun. Diğer kümeler için, bir Docker deposunda yayınlamanız veya
+kümesi için belgeler.
 
-The included `kubernetes.yaml` sets up a deployment with 2 pods (server instances) and a load balancer service. You can
-deploy the application on a Kubernetes cluster using
+Birlikte verilen `kubernetes.yaml`, 2 pod (sunucu örneği) ve bir yük dengeleyici hizmeti içeren bir dağıtım kurar.
+Yapabilirsiniz
+kullanarak uygulamayı bir Kubernetes kümesine dağıtın
 
 ```
 kubectl apply -f kubernetes.yaml
 ```
 
-If everything works, you can access your application by opening http://localhost:8000/.
-If you have something else running on port 8000, you need to change the load balancer port in `kubernetes.yaml`.
+Her şey çalışıyorsa, http://localhost:8000/ adresini açarak uygulamanıza erişebilirsiniz.
+Eğer 8000 portunda çalışan başka bir şeyiniz varsa, `kubernetes.yaml` dosyasında yük dengeleyici portunu değiştirmeniz
+gerekir.
 
-Tip: If you want to understand which pod your requests go to, you can add the value
-of `VaadinServletRequest.getCurrent().getLocalAddr()` somewhere in your UI.
+İpucu: Eğer isteklerinizin hangi pod'a gittiğini anlamak istiyorsanız, şu değeri ekleyebilirsiniz
+'in `VaadinServletRequest.getCurrent().getLocalAddr()` kısmını kullanıcı arayüzünüzde bir yere ekleyin.
 
-### Troubleshooting
+### Sorun Giderme
 
-If something is not working, you can try one of the following commands to see what is deployed and their status.
+Bir şey çalışmıyorsa, neyin konuşlandırıldığını ve durumlarını görmek için aşağıdaki komutlardan birini
+deneyebilirsiniz.
 
 ```
 kubectl get pods
-kubectl get services
-kubectl get deployments
+kubectl get hizmetleri
+kubectl get dağıtımları
 ```
 
-If the pods say `Container image "meeloper:latest" is not present with pull policy of Never` then you have not built
-your application using Docker or there is a mismatch in the name. Use `docker images ls` to see which images are
-available.
+Podlar `Container image "meeloper:latest" is not present with pull policy of Never` diyorsa, o zaman oluşturmamışsınız
+demektir
+uygulamanız Docker kullanıyor veya adda bir uyumsuzluk var. Hangi görüntülerin olduğunu görmek için `docker images ls`
+kullanın
+mevcut.
 
-If you need even more information, you can run
+Daha fazla bilgiye ihtiyacınız varsa
 
 ```
 kubectl cluster-info dump
 ```
 
-that will probably give you too much information but might reveal the cause of a problem.
+Bu muhtemelen size çok fazla bilgi verecektir ancak bir sorunun nedenini ortaya çıkarabilir.
 
-If you want to remove your whole deployment and start over, run
+Tüm dağıtımınızı kaldırmak ve baştan başlamak istiyorsanız
 
 ```
 kubectl delete -f kubernetes.yaml
 ```
+
