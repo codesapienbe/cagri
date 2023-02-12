@@ -1,0 +1,1 @@
+docker run --name mysql-server --publish "3306:3306" --env "MYSQL_ROOT_PASSWORD=toor" --detach mysql:latest
