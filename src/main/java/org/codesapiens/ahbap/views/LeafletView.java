@@ -44,9 +44,9 @@ public class LeafletView extends VerticalLayout {
 
     public LeafletView(GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
-        this.initMapComponents();
-
         add(this.geoLocation);
+
+        this.initMapComponents();
 
         this.btnLunch.addClickListener(this::btnLunchClick);
         final HorizontalLayout hlButtonContainer = new HorizontalLayout();
