@@ -29,19 +29,14 @@ import java.util.stream.Collectors;
 
 @PageTitle("Yardım Çağır!!!")
 @Route(
-        value = "/emergency/call",
+        value = "/map/call",
         layout = AppLayoutBottomNavbar.class
 )
 @RouteAlias(
-        value = "acil/cagri",
+        value = "harita/cagri",
         layout = AppLayoutBottomNavbar.class
 )
-@RouteAlias(
-        value = "",
-        layout = AppLayoutBottomNavbar.class
-)
-@PreserveOnRefresh
-public class EmergencyCallView extends VerticalLayout {
+public class MapCallView extends VerticalLayout {
 
     private final PersonService personService;
     private final ItemService itemService;
@@ -73,9 +68,9 @@ public class EmergencyCallView extends VerticalLayout {
 
     private final Accordion accordion = new Accordion();
 
-    public EmergencyCallView(PersonService personService,
-                             ItemService itemService, TagService tagService, RequirementService requirementService,
-                             GeoLocation geoLocation,  NotificationService notification) {
+    public MapCallView(PersonService personService,
+                       ItemService itemService, TagService tagService, RequirementService requirementService,
+                       GeoLocation geoLocation, NotificationService notification) {
 
         this.personService = personService;
         this.itemService = itemService;

@@ -1,6 +1,7 @@
 package org.codesapiens.ahbap.data.config;
 
-import com.vaadin.flow.component.cookieconsent.CookieConsent;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,14 +9,16 @@ import org.springframework.context.annotation.Configuration;
 public class CookieConsentConfig {
 
     @Bean
-    public CookieConsent getCookieConsent() {
-        CookieConsent cookieConsent = new CookieConsent();
-        cookieConsent.setMessage("" +
+    public VerticalLayout getCookieConsent() {
+        VerticalLayout layout = new VerticalLayout();
+        Span cookieConsent = new Span();
+        cookieConsent.setText("" +
                 "Sitemizin kullanımı sırasında gireceğiniz bilgiler hiçbir kurum ya da birey ile paylaşılmamaktadır." +
                 "Sadece sizlere yardım edecek olanlar sisteme girip talebinizi görebilir." +
                 "Uygulamanın herhangi bir kar amacı ya da reklam politikası yoktur." +
                 "");
 
-        return cookieConsent;
+        layout.add(cookieConsent);
+        return layout;
     }
 }

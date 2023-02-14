@@ -6,7 +6,6 @@ import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
-import com.vaadin.flow.component.cookieconsent.CookieConsent;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -53,21 +52,15 @@ public class EmergencyProfileView extends VerticalLayout implements BeforeEnterO
     private final Button submitButton;
 
     private final List<CheckboxGroup<ItemEntity>> itemsCheck = new ArrayList<>();
-
     private final String sessionId = VaadinSession.getCurrent().getSession().getId();
-
-    private final CookieConsent cookieConsent;
-
     private PersonEntity currentPerson;
-
     public EmergencyProfileView(PersonService personService,
                                 ItemService itemService, RequirementService requirementService,
-                                GeoLocation geoLocation, CookieConsent cookieConsent) {
+                                GeoLocation geoLocation) {
         this.personService = personService;
         this.itemService = itemService;
         this.requirementService = requirementService;
         this.geoLocation = geoLocation;
-        this.cookieConsent = cookieConsent;
 
         this.setSizeFull();
 

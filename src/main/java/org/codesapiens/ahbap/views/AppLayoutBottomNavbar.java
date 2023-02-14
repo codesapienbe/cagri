@@ -40,7 +40,7 @@ public class AppLayoutBottomNavbar extends AppLayout {
     private Tabs getTabs() {
         Tabs tabs = new Tabs();
         Tab requirementsTab = createTab(VaadinIcon.EXCLAMATION_CIRCLE, "Yardım Çağır", EmergencyCallView.class);
-        Tab emergencyTab = createTab(VaadinIcon.PACKAGE, "Temel İhtiyaçlar Listesi", HelpRequiredMapView.class);
+        Tab emergencyTab = createTab(VaadinIcon.PACKAGE, "Temel İhtiyaçlar Listesi", MapCallView.class);
         tabs.add(requirementsTab, emergencyTab);
         tabs.addThemeVariants(TabsVariant.LUMO_CENTERED, TabsVariant.LUMO_EQUAL_WIDTH_TABS);
         tabs.setSelectedTab(requirementsTab);
