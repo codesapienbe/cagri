@@ -24,6 +24,8 @@ services:
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=false
+      - SPRING_DATASOURCE_INITIALIZE=true
+      - SPRING_DATASOURCE_SCHEMA=classpath:db/schema.sql
     networks:
       - konum-net
 
@@ -35,7 +37,6 @@ services:
       test: ["CMD-SHELL", "pg_isready -U postgres -d konumdb"]
     volumes:
       - "./data:/var/lib/postgresql/data"
-      # - "./init:/docker-entrypoint-initdb.d"
     environment:
       - POSTGRES_PASSWORD=toor
     networks:
