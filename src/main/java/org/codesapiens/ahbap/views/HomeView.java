@@ -183,9 +183,7 @@ public class HomeView extends VerticalLayout {
         final var dialog = new Dialog(icoClose);
         dialog.getStyle()
                 .set("max-width", "75%")
-                .set("max-height", "85%")
-                .set("justify-content", "center")
-                .set("align-items", "center");
+                .set("max-height", "85%");
 
         dialog.open();
 
