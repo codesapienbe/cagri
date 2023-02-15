@@ -18,8 +18,8 @@ services:
         - "./logs:/app/logs"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/konumdb
-      - SPRING_DATASOURCE_USERNAME=konum
-      - SPRING_DATASOURCE_PASSWORD=konum
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=toor
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
