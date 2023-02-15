@@ -28,7 +28,8 @@ RUN mvn clean package -DskipTests
 # Running stage: the part that is used for running the application
 FROM openjdk:17-jdk-slim
 COPY --from=build /usr/src/app/target/*.jar /usr/app/app.jar
-COPY proKey ~/.vaadin/proKey
+# If you use Vaadin Pro components please activate the following line.
+# COPY proKey ~/.vaadin/proKey
 RUN useradd -m myuser
 USER myuser
 EXPOSE 8080
