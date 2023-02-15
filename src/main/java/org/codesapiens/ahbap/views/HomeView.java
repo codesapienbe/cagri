@@ -182,8 +182,8 @@ public class HomeView extends VerticalLayout {
         final var icoClose = VaadinIcon.CLOSE.create();
 
         final var dialog = new Dialog(icoClose);
-        dialog.setMaxHeight(75, Unit.PERCENTAGE);
-        dialog.setMaxWidth(75, Unit.PERCENTAGE);
+        dialog.setMaxHeight(90, Unit.PERCENTAGE);
+        dialog.setMaxWidth(80, Unit.PERCENTAGE);
         dialog.setCloseOnEsc(false);
         dialog.setDraggable(true);
 
@@ -201,7 +201,6 @@ public class HomeView extends VerticalLayout {
 
         final var buttonsLayout = new HorizontalLayout();
         buttonsLayout.getStyle()
-                .set("position", "absolute")
                 .set("bottom", "0")
                 .set("width", "50%")
                 .set("max-width", "75%")
