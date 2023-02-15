@@ -16,7 +16,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 @Theme(value = "konum", variant = Lumo.LIGHT)
-@PWA(name = "konum", shortName = "konum", offlineResources = {})
+@PWA(
+        name = "konum",
+        shortName = "konum",
+        offlineResources = {}
+)
 @NpmPackage(value = "line-awesome", version = "1.3.0")
 public class Application implements AppShellConfigurator {
 

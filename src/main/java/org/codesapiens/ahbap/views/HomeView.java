@@ -2,16 +2,21 @@ package org.codesapiens.ahbap.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
@@ -20,22 +25,21 @@ import org.codesapiens.ahbap.data.entity.RequirementEntity;
 import org.codesapiens.ahbap.data.entity.TagEntity;
 import org.codesapiens.ahbap.data.service.*;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
+import org.vaadin.elmot.flow.sensors.Position;
 import software.xdev.vaadin.maps.leaflet.flow.LMap;
 import software.xdev.vaadin.maps.leaflet.flow.data.LCenter;
-import software.xdev.vaadin.maps.leaflet.flow.data.LComponent;
 import software.xdev.vaadin.maps.leaflet.flow.data.LMarker;
 import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-@Route("leaflet-maps-view")
-public class LeafletView extends VerticalLayout {
-    private boolean viewLunch = false;
+@PageTitle("Harita | Yardım Çağır ")
+@Route("")
+public class HomeView extends VerticalLayout {
 
     /**
      * BEANS
@@ -50,20 +54,17 @@ public class LeafletView extends VerticalLayout {
     /**
      * UI-Components
      */
-    private final Button btnLunch = new Button("Ben neredeyim?");
+    private final Button btnFindMe = new Button("Ben neredeyim?");
+    private final Button btnCallHelp = new Button("Çağrı Yap");
     private LMap map;
 
-    private LMarker markerZob;
+    private LMarker markerMyCoordinates;
 
     private final GeoLocation geoLocation;
 
-    private TextField phoneField;
-    private TextField firstNameField;
-    private TextField lastNameField;
-    private Button callHelpOnTwitterButton;
-    private Button callHelpOnFacebookButton;
-    private Button callHelpOnWhatsAppButton;
-    private Button callHelpOnSmsButton;
+    private final TextField phoneField = new TextField("Telefon");
+    private final TextField firstNameField = new TextField("Ad");
+    private final TextField lastNameField = new TextField("Soyad");
 
     private final List<CheckboxGroup<ItemEntity>> itemsCheck = new ArrayList<>();
 
@@ -73,74 +74,142 @@ public class LeafletView extends VerticalLayout {
 
     private final Accordion accordion = new Accordion();
 
-    public LeafletView(PersonService personService,
-                       ItemService itemService, TagService tagService, RequirementService requirementService,
-                       GeoLocation geoLocation, NotificationService notification) {
+    /**
+     * Default settings for the state of the map
+     */
+
+    private Double defaultLatitude = 36.937149;
+    private Double defaultLongitude = 37.585831;
+
+    /**
+     * Constructor
+     */
+    public HomeView(PersonService personService,
+                    ItemService itemService, TagService tagService, RequirementService requirementService,
+                    GeoLocation geoLocation, NotificationService notification) {
+
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
         this.geoLocation = geoLocation;
         this.notification = notification;
+
         add(this.geoLocation);
 
+        Position pos = geoLocation.getValue();
+        if (pos == null) {
+            pos = new Position();
+            pos.setLatitude(defaultLatitude);
+            pos.setLongitude(defaultLongitude);
+        } else {
+            pos = new Position();
+            pos.setLatitude(geoLocation.getValue().getLatitude());
+            pos.setLongitude(geoLocation.getValue().getLongitude());
+        }
+
+        Double latitude = pos.getLatitude();
+        Double longitude = pos.getLongitude();
+
+        this.markerMyCoordinates = new LMarker(
+                latitude != null ? latitude : defaultLatitude,
+                longitude != null ? longitude : defaultLongitude,
+                "Benim konumum"
+        );
+
+        this.markerMyCoordinates.setPopup("<strong>En yüksek şiddetteki depremin olduğu konum.</strong>");
+
+        this.map = new LMap(
+                latitude != null ? latitude : defaultLatitude,
+                longitude != null ? longitude : defaultLongitude,
+                6
+        );
+        this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
+
+        this.map.setSizeFull();
+        // add some logic here for called Markers (token)
+        this.map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
+
+        this.map.addLComponents(this.markerMyCoordinates);
 
         this.setSizeFull();
         this.accordion.setWidthFull();
 
+        this.btnFindMe.addClickListener(this::onFindMeClickEvent);
 
-        this.btnLunch.addClickListener(this::btnLunchClick);
-        final HorizontalLayout hlButtonContainer = new HorizontalLayout();
-        hlButtonContainer.setWidthFull();
-        hlButtonContainer.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        hlButtonContainer.setPadding(false);
-        hlButtonContainer.setSpacing(false);
-        hlButtonContainer.add(
-                this.btnLunch,
-                new Button("Çağrı Yap", ev ->
-                {
-                    final Icon icoClose = VaadinIcon.CLOSE.create();
+        final var footerButtonsLayout = new HorizontalLayout();
+        footerButtonsLayout.setWidthFull();
+        footerButtonsLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        footerButtonsLayout.setPadding(false);
+        footerButtonsLayout.setSpacing(false);
 
-                    final Dialog dialog = new Dialog(icoClose);
-                    dialog.setWidth("50vw");
-                    dialog.setHeight("50vh");
-                    dialog.open();
+        this.btnCallHelp.addClickListener(this::onCallHelpClick);
+        footerButtonsLayout.add(this.btnFindMe, this.btnCallHelp);
 
-
-
-                    HorizontalLayout buttonsLayout = new HorizontalLayout();
-                    styleButtonLayout(buttonsLayout);
-
-                    callHelpOnTwitterButton = new Button("Twitter", callHelpOnTwitterEvent());
-                    styleTwitterButton();
-                    buttonsLayout.add(
-                            callHelpOnTwitterButton
-                    );
-
-                    callHelpOnFacebookButton = new Button("Facebook", callHelpOnFacebookEvent());
-                    styleFacebookButton();
-                    // TODO: activate later when the function works properly
-//        buttonsLayout.add(
-//                callHelpOnFacebookButton
-//        );
-
-                    callHelpOnWhatsAppButton = new Button("WhatsApp", callHelpOnWhatsAppEvent());
-                    styleWhatsAppButton();
-                    buttonsLayout.add(
-                            callHelpOnWhatsAppButton
-                    );
-
-                    callHelpOnSmsButton = new Button("SMS", callHelpOnSmsEvent());
-                    styleSmsButton();
-                    buttonsLayout.add(
-                            callHelpOnSmsButton
-                    );
-
-                    icoClose.addClickListener(iev -> dialog.close());
-                }));
-
-        this.add(this.map, hlButtonContainer);
+        this.add(this.map, footerButtonsLayout);
         this.setSizeFull();
+    }
+
+    private void onCallHelpClick(final ClickEvent<Button> event) {
+        final var icoClose = VaadinIcon.CLOSE.create();
+
+        final var dialog = new Dialog(icoClose);
+        dialog.setWidth(95, Unit.PERCENTAGE);
+        dialog.setHeight(95, Unit.PERCENTAGE);
+        dialog.open();
+
+        final var formLayout = createFormLayout();
+
+        formLayout.add(firstNameField, lastNameField);
+        formLayout.add(phoneField, 2);
+
+        dialog.add(formLayout);
+
+        final var buttonsLayout = new HorizontalLayout();
+        styleButtonLayout(buttonsLayout);
+
+        final var callHelpOnTwitterButton = new Button("Twitter", callHelpOnTwitterEvent());
+        String colorCodeForTwitter = "#1DA1F2";
+        styleDialogButton(callHelpOnTwitterButton, colorCodeForTwitter);
+        buttonsLayout.add(
+                callHelpOnTwitterButton
+        );
+
+        final var callHelpOnFacebookButton = new Button("Facebook", callHelpOnFacebookEvent());
+        // TODO: fix it later it does not work
+        String colorCodeForFacebook = "#3b5998";
+        styleDialogButton(callHelpOnFacebookButton, colorCodeForFacebook);
+        buttonsLayout.add(
+                callHelpOnFacebookButton
+        );
+
+        final var callHelpOnWhatsAppButton = new Button("WhatsApp", callHelpOnWhatsAppEvent());
+        String colorCodeForWhatsApp = "#25D366";
+        styleDialogButton(callHelpOnWhatsAppButton, colorCodeForWhatsApp);
+        buttonsLayout.add(
+                callHelpOnWhatsAppButton
+        );
+
+        final var callHelpOnSmsButton = new Button("SMS", callHelpOnSmsEvent());
+        // Soft orange for SMS button
+        String colorCodeForSms = "#FFA500";
+        styleDialogButton(callHelpOnSmsButton, colorCodeForSms);
+        buttonsLayout.add(
+                callHelpOnSmsButton
+        );
+
+        dialog.add(buttonsLayout);
+
+        icoClose.addClickListener(iev -> dialog.close());
+    }
+
+    private static void styleDialogButton(Button callHelpOnTwitterButton, String colorCode) {
+        callHelpOnTwitterButton.getStyle()
+                .set("background-color", colorCode)
+                .set("margin-top", "5px")
+                .set("color", "white")
+                .set("border-radius", "5px")
+                .set("border", "none");
     }
 
     private FormLayout createFormLayout() {
@@ -436,12 +505,6 @@ public class LeafletView extends VerticalLayout {
         return requirement;
     }
 
-    public void centralizeLayout(VerticalLayout component) {
-        component.setAlignItems(Alignment.CENTER);
-        component.setJustifyContentMode(JustifyContentMode.CENTER);
-        component.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-    }
-
     private static void styleButtonLayout(HorizontalLayout buttonsLayout) {
         buttonsLayout.setPadding(false);
         buttonsLayout.setSpacing(false);
@@ -450,85 +513,63 @@ public class LeafletView extends VerticalLayout {
         buttonsLayout.setWidthFull();
     }
 
-    private void styleTwitterButton() {
-        callHelpOnTwitterButton.getStyle()
-                .set("text-align", "center")
-                .set("margin-top", "10px")
-                .set("margin-left", "10px")
-                .set("margin-right", "10px")
-                .set("background-color", "#00acee")
-                .set("border-radius", "5px")
-                .set("color", "#FFFFFF");
+    private void onFindMeClickEvent(final ClickEvent<Button> event) {
+        Double latitude = geoLocation.getValue().getLatitude();
+        Double longitude = geoLocation.getValue().getLongitude();
+        this.map.setViewPoint(new LCenter(latitude, longitude, 16));
+
+        this.markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
+        this.map.addMarkerClickListener(onFindMeClick -> {
+            Dialog dialog = new Dialog();
+
+            // Add a profile layout to the dialog which has a close button, a title and a description
+            VerticalLayout profileLayout = new VerticalLayout();
+
+            // Add a close button to the dialog
+            Button closeButton = new Button("Kapat", closeProfileView -> dialog.close());
+            profileLayout.add(closeButton);
+
+            // Add a title to the dialog
+            profileLayout.add(new Text("Konumunuz: " + latitude + ":" + longitude));
+
+            // Create an avatar image view with a default image
+            Image avatar = new Image("https://i.imgur.com/9YcVw9p.jpg", "Avatar");
+            avatar.setWidth("100px");
+            avatar.setHeight("100px");
+            profileLayout.add(avatar);
+
+            // Add a description to the dialog
+            profileLayout.add(new Text("Bu konumunuzun doğruluğunu doğrulamak için lütfen bir fotoğraf yükleyiniz."));
+
+            if(avatar.getSrc().equals("https://i.imgur.com/9YcVw9p.jpg")){
+                avatar.setVisible(false);
+            }
+
+            // Add a file upload to the dialog
+            Upload upload = new Upload();
+            upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
+            upload.setMaxFileSize(1000000);
+            upload.setDropLabel(new Label("Fotoğrafınızı buraya sürükleyin"));
+            Button uploadButton = new Button("Fotoğraf yükle");
+
+            upload.addSucceededListener(onUploadSucceeded -> {
+                avatar.setSrc(onUploadSucceeded.getFileName());
+                avatar.setVisible(true);
+            });
+
+            upload.setUploadButton(uploadButton);
+
+            profileLayout.add(upload);
+
+            dialog.add(profileLayout);
+
+            dialog.open();
+
+            add(dialog);
+
+        });
+
+        this.map.addLComponents(markerMyCoordinates);
     }
 
-    private void styleFacebookButton() {
-        callHelpOnFacebookButton.getStyle()
-                .set("text-align", "center")
-                .set("margin-top", "10px")
-                .set("margin-left", "10px")
-                .set("margin-right", "10px")
-                .set("background-color", "#3b5998")
-                .set("border-radius", "5px")
-                .set("color", "#FFFFFF");
-    }
-
-    private void styleWhatsAppButton() {
-        callHelpOnWhatsAppButton.getStyle()
-                .set("text-align", "center")
-                .set("margin-top", "10px")
-                .set("margin-left", "10px")
-                .set("margin-right", "10px")
-                .set("background-color", "#25D366")
-                .set("border-radius", "5px")
-                .set("color", "#FFFFFF");
-    }
-
-    private void styleSmsButton() {
-        callHelpOnSmsButton.getStyle()
-                .set("text-align", "center")
-                .set("margin-top", "10px")
-                .set("margin-left", "10px")
-                .set("margin-right", "10px")
-                .set("background-color", "#d8d8d8")
-                .set("border-radius", "5px")
-                .set("color", "#FFFFFF");
-    }
-
-
-    private void btnLunchClick(final ClickEvent<Button> event) {
-        this.viewLunch = !this.viewLunch;
-
-        final List<LComponent> normalComponents = Collections.singletonList(this.markerZob);
-
-        this.map.setViewPoint(new LCenter(
-                geoLocation.getValue().getLatitude(),
-                geoLocation.getValue().getLongitude(),
-                this.viewLunch ? 16 : 17)
-        );
-        this.map.removeLComponents(normalComponents);
-        this.map.addLComponents(normalComponents);
-
-        this.btnLunch.setText(this.viewLunch ? "Beni Bul" : "Beni bul (yakınlaştır)");
-    }
-
-    private void initMapComponents() {
-        this.markerZob = new LMarker(
-                geoLocation.getValue().getLatitude(),
-                geoLocation.getValue().getLongitude(),
-                "Benim konumum"
-        );
-        this.markerZob.setPopup("Tren istasyonu");
-
-        this.map = new LMap(
-                geoLocation.getValue().getLatitude(),
-                geoLocation.getValue().getLongitude(),
-                17);
-        this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
-
-        this.map.setSizeFull();
-        // add some logic here for called Markers (token)
-        this.map.addMarkerClickListener(ev -> System.out.println(ev.getTag()));
-
-        this.map.addLComponents(this.markerZob);
-    }
 }
