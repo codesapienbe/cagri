@@ -3,6 +3,7 @@ package org.codesapiens.ahbap.views;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
@@ -181,9 +182,10 @@ public class HomeView extends VerticalLayout {
         final var icoClose = VaadinIcon.CLOSE.create();
 
         final var dialog = new Dialog(icoClose);
-        dialog.getStyle()
-                .set("max-width", "75%")
-                .set("max-height", "85%");
+        dialog.setMaxHeight(75, Unit.PERCENTAGE);
+        dialog.setMaxWidth(75, Unit.PERCENTAGE);
+        dialog.setCloseOnEsc(false);
+        dialog.setDraggable(true);
 
         dialog.open();
 
