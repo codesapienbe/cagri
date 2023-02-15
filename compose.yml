@@ -4,8 +4,8 @@ services:
   app:
     image: "yilmazchef/konum:latest"
     build:
-        context: .
-        dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: "konum-app"
     depends_on:
       db:
@@ -15,9 +15,9 @@ services:
       - "8080:8080"
       - "8443:8443"
     volumes:
-        - "konum-app-disk:/app/data"
+      - "konum-app-disk:/app/data"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/konumdb
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/konumdb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
@@ -35,7 +35,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d konumdb"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d konumdb" ]
     volumes:
       - "konum-database-disk:/var/lib/postgresql/data"
     environment:
@@ -43,7 +43,7 @@ services:
       - POSTGRES_DB=konumdb
       - POSTGRES_USER=postgres
     networks:
-        - konum-net
+      - konum-net
 
   dba:
     image: "dpage/pgadmin4:latest"
@@ -57,14 +57,16 @@ services:
       - PGADMIN_DEFAULT_EMAIL=dev@mail.be
       - PGADMIN_DEFAULT_PASSWORD=postgres
       - PGADMIN_LISTEN_PORT=80
+    networks:
+      - konum-net
 
 networks:
   konum-net:
     driver: bridge
 
 volumes:
-    konum-app-disk:
-        driver: local
-    konum-database-disk:
-        driver: local
+  konum-app-disk:
+    driver: local
+  konum-database-disk:
+    driver: local
 
