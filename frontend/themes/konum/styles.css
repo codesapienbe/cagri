@@ -12,7 +12,7 @@ html {
     --lumo-space-m: 0.625rem;
     --lumo-space-s: 0.3125rem;
     --lumo-space-xs: 0.1875rem;
-
+    background: transparent;
 }
 
 [theme~="dark"] {
@@ -41,5 +41,7 @@ html {
     --lumo-success-color: hsl(159, 76%, 57%);
     --lumo-success-contrast-color: hsl(159, 29%, 10%);
     --lumo-success-text-color: hsl(159, 61%, 40%);
+
+    background: transparent;
 
 }

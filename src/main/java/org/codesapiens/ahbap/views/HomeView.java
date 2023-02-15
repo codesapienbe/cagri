@@ -3,7 +3,6 @@ package org.codesapiens.ahbap.views;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
@@ -31,6 +30,9 @@ import software.xdev.vaadin.maps.leaflet.flow.data.LCenter;
 import software.xdev.vaadin.maps.leaflet.flow.data.LMarker;
 import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,12 +53,7 @@ public class HomeView extends VerticalLayout {
     private final TagService tagService;
     private final RequirementService requirementService;
 
-    /**
-     * UI-Components
-     */
-    private final Button btnFindMe = new Button("Ben neredeyim?");
-    private final Button btnCallHelp = new Button("Çağrı Yap");
-    private LMap map;
+    private final LMap map;
 
     private LMarker markerMyCoordinates;
 
@@ -72,20 +69,10 @@ public class HomeView extends VerticalLayout {
 
     private final NotificationService notification;
 
-    private final Accordion accordion = new Accordion();
-
-    /**
-     * Default settings for the state of the map
-     */
-
-    private Double defaultLatitude = 36.937149;
-    private Double defaultLongitude = 37.585831;
-
     /**
      * Constructor
      */
-    public HomeView(PersonService personService,
-                    ItemService itemService, TagService tagService, RequirementService requirementService,
+    public HomeView(PersonService personService, ItemService itemService, TagService tagService, RequirementService requirementService,
                     GeoLocation geoLocation, NotificationService notification) {
 
         this.personService = personService;
@@ -95,9 +82,20 @@ public class HomeView extends VerticalLayout {
         this.geoLocation = geoLocation;
         this.notification = notification;
 
+        this.getStyle()
+                .set("background-color", "#f5f5f5")
+                .set("padding", "0")
+                .set("margin", "0")
+                .set("spacing", "0")
+                .set("border", "0")
+                .set("font-family", "Roboto, sans-serif");
+
         add(this.geoLocation);
 
         Position pos = geoLocation.getValue();
+
+        Double defaultLatitude = 37.165867063341274;
+        Double defaultLongitude = 37.042596136246736;
         if (pos == null) {
             pos = new Position();
             pos.setLatitude(defaultLatitude);
@@ -108,8 +106,8 @@ public class HomeView extends VerticalLayout {
             pos.setLongitude(geoLocation.getValue().getLongitude());
         }
 
-        Double latitude = pos.getLatitude();
-        Double longitude = pos.getLongitude();
+        var latitude = pos.getLatitude();
+        var longitude = pos.getLongitude();
 
         this.markerMyCoordinates = new LMarker(
                 latitude != null ? latitude : defaultLatitude,
@@ -125,26 +123,55 @@ public class HomeView extends VerticalLayout {
                 6
         );
         this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
-
         this.map.setSizeFull();
         // add some logic here for called Markers (token)
         this.map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
-
         this.map.addLComponents(this.markerMyCoordinates);
-
         this.setSizeFull();
-        this.accordion.setWidthFull();
 
-        this.btnFindMe.addClickListener(this::onFindMeClickEvent);
+        final var accordion = new Accordion();
+        accordion.setWidthFull();
+
+        /**
+         * UI-Components
+         */
 
         final var footerButtonsLayout = new HorizontalLayout();
-        footerButtonsLayout.setWidthFull();
-        footerButtonsLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        footerButtonsLayout.setPadding(false);
-        footerButtonsLayout.setSpacing(false);
+        footerButtonsLayout.getStyle()
+                .set("position", "absolute")
+                .set("bottom", "0")
+                .set("width", "100%")
+                .set("padding", "10px")
+                .set("margin", "0")
+                .set("align-items", "center")
+                .set("justify-content", "space-between")
+                .set("background-color", "transparent")
+                .set("z-index", "1000");
 
-        this.btnCallHelp.addClickListener(this::onCallHelpClick);
-        footerButtonsLayout.add(this.btnFindMe, this.btnCallHelp);
+        final var btnFindMe = new Button("Ben neredeyim?");
+        btnFindMe.getStyle()
+                .set("background-color", "#4caf50")
+                .set("color", "#fff")
+                .set("border", "none")
+                .set("border-radius", "5px")
+                .set("left", "0")
+                .set("bottom", "0")
+                .set("z-index", "1000");
+
+        btnFindMe.addClickListener(this::onFindMeClickEvent);
+
+        final var btnCallHelp = new Button("Çağrı Yap");
+        btnCallHelp.getStyle()
+                .set("background-color", "#f44336")
+                .set("color", "#fff")
+                .set("border", "none")
+                .set("border-radius", "5px")
+                .set("right", "0")
+                .set("bottom", "0")
+                .set("z-index", "1000");
+
+        btnCallHelp.addClickListener(this::onCallHelpClick);
+        footerButtonsLayout.add(btnFindMe, btnCallHelp);
 
         this.add(this.map, footerButtonsLayout);
         this.setSizeFull();
@@ -154,11 +181,18 @@ public class HomeView extends VerticalLayout {
         final var icoClose = VaadinIcon.CLOSE.create();
 
         final var dialog = new Dialog(icoClose);
-        dialog.setWidth(95, Unit.PERCENTAGE);
-        dialog.setHeight(95, Unit.PERCENTAGE);
+        dialog.getStyle()
+                .set("max-width", "75%")
+                .set("max-height", "85%")
+                .set("justify-content", "center")
+                .set("align-items", "center");
+
         dialog.open();
 
-        final var formLayout = createFormLayout();
+        final var formLayout = new FormLayout();
+        formLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("20em", 2));
 
         formLayout.add(firstNameField, lastNameField);
         formLayout.add(phoneField, 2);
@@ -166,34 +200,49 @@ public class HomeView extends VerticalLayout {
         dialog.add(formLayout);
 
         final var buttonsLayout = new HorizontalLayout();
-        styleButtonLayout(buttonsLayout);
+        buttonsLayout.getStyle()
+                .set("position", "absolute")
+                .set("bottom", "0")
+                .set("width", "50%")
+                .set("max-width", "75%")
+                .set("padding", "10px")
+                .set("margin", "0")
+                .set("background-color", "transparent")
+                .set("z-index", "1000");
 
-        final var callHelpOnTwitterButton = new Button("Twitter", callHelpOnTwitterEvent());
-        String colorCodeForTwitter = "#1DA1F2";
-        styleDialogButton(callHelpOnTwitterButton, colorCodeForTwitter);
+        final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
+        callHelpOnTwitterIcon.setWidth("50px");
+        callHelpOnTwitterIcon.setHeight("50px");
+        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, callHelpOnTwitterEvent());
+        styleDialogButton(callHelpOnTwitterButton);
         buttonsLayout.add(
                 callHelpOnTwitterButton
         );
 
-        final var callHelpOnFacebookButton = new Button("Facebook", callHelpOnFacebookEvent());
+        final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
+        callHelpOnFacebookIcon.setWidth("50px");
+        callHelpOnFacebookIcon.setHeight("50px");
+        final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon, callHelpOnFacebookEvent());
         // TODO: fix it later it does not work
-        String colorCodeForFacebook = "#3b5998";
-        styleDialogButton(callHelpOnFacebookButton, colorCodeForFacebook);
+        styleDialogButton(callHelpOnFacebookButton);
         buttonsLayout.add(
                 callHelpOnFacebookButton
         );
 
-        final var callHelpOnWhatsAppButton = new Button("WhatsApp", callHelpOnWhatsAppEvent());
-        String colorCodeForWhatsApp = "#25D366";
-        styleDialogButton(callHelpOnWhatsAppButton, colorCodeForWhatsApp);
+        final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
+        callHelpOnWhatsAppIcon.setWidth("50px");
+        callHelpOnWhatsAppIcon.setHeight("50px");
+        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, callHelpOnWhatsAppEvent());
+        styleDialogButton(callHelpOnWhatsAppButton);
         buttonsLayout.add(
                 callHelpOnWhatsAppButton
         );
 
-        final var callHelpOnSmsButton = new Button("SMS", callHelpOnSmsEvent());
-        // Soft orange for SMS button
-        String colorCodeForSms = "#FFA500";
-        styleDialogButton(callHelpOnSmsButton, colorCodeForSms);
+        final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
+        callHelpOnSmsIcon.setWidth("50px");
+        callHelpOnSmsIcon.setHeight("50px");
+        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, callHelpOnSmsEvent());
+        styleDialogButton(callHelpOnSmsButton);
         buttonsLayout.add(
                 callHelpOnSmsButton
         );
@@ -203,21 +252,11 @@ public class HomeView extends VerticalLayout {
         icoClose.addClickListener(iev -> dialog.close());
     }
 
-    private static void styleDialogButton(Button callHelpOnTwitterButton, String colorCode) {
+    private static void styleDialogButton(Button callHelpOnTwitterButton) {
         callHelpOnTwitterButton.getStyle()
-                .set("background-color", colorCode)
-                .set("margin-top", "5px")
+                .set("margin-top", "1em")
                 .set("color", "white")
-                .set("border-radius", "5px")
                 .set("border", "none");
-    }
-
-    private FormLayout createFormLayout() {
-        FormLayout formLayout = new FormLayout();
-        formLayout.setResponsiveSteps(
-                new FormLayout.ResponsiveStep("0", 1),
-                new FormLayout.ResponsiveStep("20em", 2));
-        return formLayout;
     }
 
     private ComponentEventListener<ClickEvent<Button>> callHelpOnSmsEvent() {
@@ -541,7 +580,7 @@ public class HomeView extends VerticalLayout {
             // Add a description to the dialog
             profileLayout.add(new Text("Bu konumunuzun doğruluğunu doğrulamak için lütfen bir fotoğraf yükleyiniz."));
 
-            if(avatar.getSrc().equals("https://i.imgur.com/9YcVw9p.jpg")){
+            if (avatar.getSrc().equals("https://i.imgur.com/9YcVw9p.jpg")) {
                 avatar.setVisible(false);
             }
 
@@ -549,6 +588,19 @@ public class HomeView extends VerticalLayout {
             Upload upload = new Upload();
             upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
             upload.setMaxFileSize(1000000);
+
+            // firstly set the receiver implementation with upload.setReceiver
+            upload.setReceiver((fileName, mimeType) -> {
+                // Create a file with the same name as the uploaded file in the user's home directory
+                File file = new File(System.getProperty("user.home") + "/Desktop/" + fileName);
+                try {
+                    return new FileOutputStream(file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+
             upload.setDropLabel(new Label("Fotoğrafınızı buraya sürükleyin"));
             Button uploadButton = new Button("Fotoğraf yükle");
 
