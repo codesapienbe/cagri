@@ -1,0 +1,2 @@
+DROP DATABASE konumdb;
+CREATE DATABASE konumdb;

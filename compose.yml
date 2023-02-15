@@ -10,7 +10,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    restart: unless-stopped
+    restart: "unless-stopped"
     ports:
       - "8080:8080"
       - "8443:8443"
@@ -25,18 +25,19 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=false
       - SPRING_DATASOURCE_INITIALIZE=true
-      - SPRING_DATASOURCE_SCHEMA=classpath:db/schema.sql
+      - SPRING_DATASOURCE_INITIALIZE_MODE=always
     networks:
       - konum-net
 
   db:
     image: "postgres:latest"
     container_name: "konum-db"
-    restart: unless-stopped
+    restart: "no"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d konumdb"]
     volumes:
       - "./data:/var/lib/postgresql/data"
+      - "./init:/docker-entrypoint-initdb.d"
     environment:
       - POSTGRES_PASSWORD=toor
     networks:
@@ -45,7 +46,7 @@ services:
   dba:
     image: "dpage/pgadmin4:latest"
     container_name: "konum-dba"
-    restart: unless-stopped
+    restart: "on-failure"
     ports:
       - "5433:80"
     environment:
