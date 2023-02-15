@@ -17,15 +17,14 @@ services:
     volumes:
         - "konum-app-disk:/app/data"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/konumdb?useSSL=false&createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/konumdb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=toor
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=false
-      - SPRING_DATASOURCE_INITIALIZE=true
-      - SPRING_DATASOURCE_INITIALIZE_MODE=always
+      - SPRING_SQL_INIT_MODE=always
     networks:
       - konum-net
 
