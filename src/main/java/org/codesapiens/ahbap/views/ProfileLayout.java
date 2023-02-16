@@ -6,17 +6,22 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
-@Tag("vaadin-user-profile-layout")
-public class UserProfileLayout extends HorizontalLayout {
+import java.util.Objects;
 
-    public UserProfileLayout(String imageUrl, String fullName, String phoneNumber, String requestTime) {
+@Tag("vaadin-user-profile-layout")
+public class ProfileLayout extends HorizontalLayout {
+
+    public ProfileLayout(String imageUrl, String fullName, String phoneNumber, String requestTime) {
         setSpacing(true);
         setWidthFull();
 
         getStyle().set("background", "rgba(255, 255, 255, 0.7)");
         getStyle().set("backdrop-filter", "blur(10px)");
 
-        Image profileImage = new Image(imageUrl, "Profile Image");
+        Image profileImage = new Image(
+                Objects.requireNonNullElse(imageUrl, "https://i.imgur.com/1ZQZ1Yx.jpg"),
+                Objects.requireNonNullElse(fullName, "Profile Image")
+        );
         profileImage.setHeight("150px");
         profileImage.setWidth("150px");
         profileImage.getStyle().set("border-radius", "50%");

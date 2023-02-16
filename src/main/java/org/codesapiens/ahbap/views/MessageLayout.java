@@ -7,9 +7,9 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import java.util.List;
 
 @Tag("vaadin-latest-messages-layout")
-public class LatestMessagesLayout extends VerticalLayout {
+public class MessageLayout extends VerticalLayout {
 
-    public LatestMessagesLayout(String userName, List<String> messages) {
+    public MessageLayout(String userName, List<String> messages) {
         setSpacing(true);
         setWidthFull();
 

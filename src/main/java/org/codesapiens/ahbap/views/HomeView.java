@@ -27,6 +27,7 @@ import software.xdev.vaadin.maps.leaflet.flow.data.LCenter;
 import software.xdev.vaadin.maps.leaflet.flow.data.LMarker;
 import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -46,7 +47,6 @@ public class HomeView extends VerticalLayout {
     private final ShareService shareService;
     private final NotificationService notification;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private final GeoLocation geoLocation = new GeoLocation();
 
     // Create a click counter for findMeButton
@@ -241,15 +241,15 @@ public class HomeView extends VerticalLayout {
 
     }
 
-    private PersonEntity findOrCreatePerson(TextField phoneField, GeoLocation geoLocation) {
-        PersonEntity personToSave = mapToPerson(
-                null,
-                null,
-                phoneField,
-                geoLocation,
+    private PersonEntity findOrCreatePerson(@NotNull TextField phoneField, @NotNull GeoLocation geoLocation) {
+        return mapToPerson(
+                "",
+                "",
+                phoneField.getValue(),
+                geoLocation.getValue().getLatitude(),
+                geoLocation.getValue().getLongitude(),
                 VaadinSession.getCurrent().getSession().getId()
         );
-        return personToSave;
     }
 
     private void shareOnSMS(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
@@ -371,10 +371,11 @@ public class HomeView extends VerticalLayout {
             notification.sendNotification("Daha önce çağrınız mevcut.");
         } else {
             PersonEntity personToSave = mapToPerson(
-                    firstNameField,
-                    lastNameField,
-                    phoneField,
-                    geoLocation,
+                    firstNameField.getValue(),
+                    lastNameField.getValue(),
+                    phoneField.getValue(),
+                    geoLocation.getValue().getLatitude(),
+                    geoLocation.getValue().getLongitude(),
                     VaadinSession.getCurrent().getSession().getId()
             );
             PersonEntity savedPerson = personService.update(personToSave);
@@ -408,17 +409,13 @@ public class HomeView extends VerticalLayout {
         getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
     }
 
-    private PersonEntity mapToPerson(
-            TextField firstNameField,
-            TextField lastNameField,
-            TextField phoneField,
-            GeoLocation geoLocation,
-            String sessionId
-    ) {
+    private PersonEntity mapToPerson(String firstName, String lastName, String phone,
+                                     Double latitude, Double longitude, String sessionId) {
         PersonEntity personEntity = new PersonEntity();
-        personEntity.setFirstName(firstNameField.getValue());
-        personEntity.setLastName(lastNameField.getValue());
-        personEntity.setPhone(phoneField.getValue());
+        // Capitalize first letters of the name and surname
+        personEntity.setFirstName(firstName.substring(0, 1).toUpperCase() + firstName.substring(1));
+        personEntity.setLastName(lastName.substring(0, 1).toUpperCase() + lastName.substring(1));
+        personEntity.setPhone(phone.trim());
         personEntity.setLatitude(geoLocation.getValue().getLatitude());
         personEntity.setLongitude(geoLocation.getValue().getLongitude());
         personEntity.setSessionId(sessionId);
@@ -442,6 +439,12 @@ public class HomeView extends VerticalLayout {
 
     private void onFindMeClick(GeoLocation geoLocation) {
 
+        int clickCount = findMeClickCount.incrementAndGet();
+
+        if(clickCount > 1){
+            return;
+        }
+
         final var map = new LMap(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude(), 8);
         map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
         map.setSizeFull();
@@ -460,7 +463,7 @@ public class HomeView extends VerticalLayout {
             final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> dialog.close());
 
             // Add the user profile layout to the dialog
-            final var profileLayout = new UserProfileLayout(
+            final var profileLayout = new ProfileLayout(
                     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
                     "John Doe",
                     "+90 555 555 55 55",
