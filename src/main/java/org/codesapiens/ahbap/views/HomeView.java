@@ -170,8 +170,9 @@ public class HomeView extends VerticalLayout {
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
         itemsGroupedByCategory.forEach((category, items) -> {
-            final var lBox = new MultiSelectListBox<>();
+            final var lBox = new MultiSelectListBox<ItemEntity>();
             lBox.setItems(items);
+            lBox.setItemLabelGenerator(ItemEntity::getTitle);
 
             formLayout.add(lBox, 2);
         });
