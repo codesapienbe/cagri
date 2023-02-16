@@ -52,8 +52,6 @@ public class HomeView extends VerticalLayout {
 
     private final LMap map;
 
-    private LMarker markerMyCoordinates;
-
     private final GeoLocation geoLocation;
 
     private final TextField phoneField = new TextField("Telefon");
@@ -539,12 +537,7 @@ public class HomeView extends VerticalLayout {
         var longitude = geoLocation.getValue() == null ? 0.0 : geoLocation.getValue().getLongitude();
         this.map.setViewPoint(new LCenter(latitude, longitude, 8));
 
-        if (this.markerMyCoordinates == null) {
-            this.markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
-        } else {
-            this.markerMyCoordinates.setLat(latitude);
-            this.markerMyCoordinates.setLon(longitude);
-        }
+        final var markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
 
         this.map.addMarkerClickListener(onFindMeClick -> {
             final var dialog = new Dialog();
@@ -570,7 +563,7 @@ public class HomeView extends VerticalLayout {
 
         });
 
-        this.map.addLComponents(this.markerMyCoordinates);
+        this.map.addLComponents(markerMyCoordinates);
 
     }
 
