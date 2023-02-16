@@ -1,7 +1,5 @@
 package org.codesapiens.ahbap.views;
 
-import com.vaadin.flow.component.ClickEvent;
-import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -12,6 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -30,9 +29,9 @@ import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -40,72 +39,37 @@ import java.util.stream.Collectors;
 @Route("")
 public class HomeView extends VerticalLayout {
 
-    /**
-     * BEANS
-     */
-
     private final PersonService personService;
     private final ItemService itemService;
-
     private final TagService tagService;
     private final RequirementService requirementService;
-
     private final ShareService shareService;
-
-    private final LMap map;
-
-    private final GeoLocation geoLocation;
-
-    private final TextField phoneField = new TextField("Telefon");
-    private final TextField firstNameField = new TextField("Ad");
-    private final TextField lastNameField = new TextField("Soyad");
-
-    private final List<MultiSelectListBox<ItemEntity>> itemsCheck = new ArrayList<>();
-
-    private final String sessionId = VaadinSession.getCurrent().getSession().getId();
-
     private final NotificationService notification;
 
-    private PersonEntity currentPerson;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private final GeoLocation geoLocation = new GeoLocation();
 
-    /**
-     * Constructor
-     */
-    public HomeView(PersonService personService, ItemService itemService, TagService tagService, RequirementService requirementService,
-                    ShareService shareService, GeoLocation geoLocation, NotificationService notification) {
+    // Create a click counter for findMeButton
+    private final AtomicInteger findMeClickCount = new AtomicInteger(0);
+
+    public HomeView(PersonService personService, ItemService itemService,
+                    TagService tagService, RequirementService requirementService,
+                    ShareService shareService, NotificationService notification) {
 
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
         this.shareService = shareService;
-        this.geoLocation = geoLocation;
         this.notification = notification;
 
-        add(this.geoLocation);
-        StyleUtils.pageLayout(this.getElement());
+        StyleUtils.pageBackground(this.getElement());
 
-        double defaultLatitude = 37.165867063341274;
-        double defaultLongitude = 37.042596136246736;
-
-        this.currentPerson = this.personService.getBySessionId(this.sessionId)
-                .orElse(new PersonEntity(
-                                this.sessionId,
-                                "",
-                                "",
-                                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now()),
-                                this.geoLocation.getValue() != null ? this.geoLocation.getValue().getLongitude() : defaultLatitude,
-                                this.geoLocation.getValue() != null ? this.geoLocation.getValue().getLatitude() : defaultLongitude
-                        )
-                );
-
-
-        this.map = new LMap(this.currentPerson.getLatitude(), this.currentPerson.getLongitude(), 8);
-        this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
-        this.map.setSizeFull();
-        // add some logic here for called Markers (token)
-        this.map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
+        geoLocation.setWatch(true);
+        geoLocation.setHighAccuracy(true);
+        geoLocation.setTimeout(100000);
+        geoLocation.setMaxAge(200000);
+        add(geoLocation);
 
         this.setSizeFull();
 
@@ -117,20 +81,19 @@ public class HomeView extends VerticalLayout {
 
         final var btnFindMe = new Button("Ben neredeyim?");
         StyleUtils.footerButton(btnFindMe, "left", "#4caf50");
-
-        btnFindMe.addClickListener(this::onFindMeClick);
+        btnFindMe.addClickListener(onClick -> onFindMeClick(geoLocation));
 
         final var btnCallHelp = new Button("Çağrı Yap");
         StyleUtils.footerButton(btnCallHelp, "right", "#f44336");
 
-        btnCallHelp.addClickListener(this::onCallHelpClick);
+        btnCallHelp.addClickListener(onClick -> onCallHelpClick(geoLocation));
         footerButtonsLayout.add(btnFindMe, btnCallHelp);
 
-        this.add(this.map, footerButtonsLayout);
+        this.add(footerButtonsLayout);
         this.setSizeFull();
     }
 
-    private void onCallHelpClick(final ClickEvent<Button> event) {
+    private void onCallHelpClick(GeoLocation geoLocation) {
         final var icoClose = VaadinIcon.CLOSE.create();
 
         final var dialog = new Dialog(icoClose);
@@ -146,9 +109,14 @@ public class HomeView extends VerticalLayout {
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("20em", 2));
 
-        formLayout.add(firstNameField, lastNameField);
-        formLayout.add(phoneField, 2);
+        final var phoneField = new TextField("Telefon");
+        final var firstNameField = new TextField("Ad");
+        final var lastNameField = new TextField("Soyad");
+        final var descriptionField = new TextArea("Açıklama");
 
+        formLayout.add(firstNameField, lastNameField);
+        formLayout.add(descriptionField, 2);
+        formLayout.add(phoneField, 2);
 
         final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
@@ -164,20 +132,24 @@ public class HomeView extends VerticalLayout {
         dialog.add(formLayout);
 
         final var buttonsLayout = new HorizontalLayout();
-        buttonsLayout.getStyle()
-                .set("bottom", "0")
-                .set("width", "50%")
-                .set("max-width", "75%")
-                .set("padding", "10px")
-                .set("margin", "0")
-                .set("background-color", "transparent")
-                .set("z-index", "1000");
+        StyleUtils.shareButtons(buttonsLayout.getElement());
 
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
         callHelpOnTwitterIcon.setWidth("50px");
         callHelpOnTwitterIcon.setHeight("50px");
-        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, callHelpOnTwitterEvent());
-        styleDialogButton(callHelpOnTwitterButton);
+        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon,
+                onClick -> callHelpOnTwitterEvent(
+                        formLayout.getChildren()
+                                .filter(component -> component instanceof MultiSelectListBox)
+                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                                .collect(Collectors.toList()),
+                        phoneField,
+                        firstNameField,
+                        lastNameField,
+                        geoLocation
+                )
+        );
+        StyleUtils.dialogButton(callHelpOnTwitterButton.getElement());
         buttonsLayout.add(
                 callHelpOnTwitterButton
         );
@@ -185,8 +157,17 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
         callHelpOnFacebookIcon.setWidth("50px");
         callHelpOnFacebookIcon.setHeight("50px");
-        final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon, callHelpOnFacebookEvent());
-        styleDialogButton(callHelpOnFacebookButton);
+        final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
+                onClick -> callHelpOnFacebookEvent(
+                        formLayout.getChildren()
+                                .filter(component -> component instanceof MultiSelectListBox)
+                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                                .collect(Collectors.toList()),
+                        phoneField,
+                        geoLocation
+                )
+        );
+        StyleUtils.dialogButton(callHelpOnFacebookButton.getElement());
         // TODO: fix it later it does not work
         callHelpOnFacebookButton.setEnabled(false);
         buttonsLayout.add(
@@ -196,8 +177,15 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
         callHelpOnWhatsAppIcon.setWidth("50px");
         callHelpOnWhatsAppIcon.setHeight("50px");
-        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, callHelpOnWhatsAppEvent());
-        styleDialogButton(callHelpOnWhatsAppButton);
+        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, onClick -> callHelpOnWhatsAppEvent(
+                formLayout.getChildren()
+                        .filter(component -> component instanceof MultiSelectListBox)
+                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                        .collect(Collectors.toList()),
+                phoneField,
+                geoLocation
+        ));
+        StyleUtils.dialogButton((callHelpOnWhatsAppButton.getElement()));
         buttonsLayout.add(
                 callHelpOnWhatsAppButton
         );
@@ -205,8 +193,15 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
         callHelpOnSmsIcon.setWidth("50px");
         callHelpOnSmsIcon.setHeight("50px");
-        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, callHelpOnSmsEvent());
-        styleDialogButton(callHelpOnSmsButton);
+        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, onClick -> callHelpOnSmsEvent(
+                formLayout.getChildren()
+                        .filter(component -> component instanceof MultiSelectListBox)
+                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                        .collect(Collectors.toList()),
+                phoneField,
+                geoLocation
+        ));
+        StyleUtils.dialogButton(callHelpOnSmsButton.getElement());
         buttonsLayout.add(
                 callHelpOnSmsButton
         );
@@ -216,126 +211,118 @@ public class HomeView extends VerticalLayout {
         icoClose.addClickListener(iev -> dialog.close());
     }
 
-    private static void styleDialogButton(Button callHelpOnTwitterButton) {
-        callHelpOnTwitterButton.getStyle()
-                .set("margin-top", "1em")
-                .set("color", "white")
-                .set("border", "none");
-    }
 
-    private ComponentEventListener<ClickEvent<Button>> callHelpOnSmsEvent() {
-        return onClick -> {
-            Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
+    private void callHelpOnSmsEvent(
+            List<MultiSelectListBox<ItemEntity>> itemsCheck,
+            TextField phoneField, GeoLocation geoLocation
+    ) {
+        Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
 
-            if (foundPerson.isPresent()) {
-                notification.sendNotification("Daha önce çağrınız mevcut.");
-            } else {
-                PersonEntity personToSave = mapToPerson();
-                PersonEntity savedPerson = personService.update(personToSave);
+        if (foundPerson.isPresent()) {
+            notification.sendNotification("Daha önce çağrınız mevcut.");
+        } else {
+            PersonEntity personToSave = findOrCreatePerson(phoneField, geoLocation);
+            PersonEntity savedPerson = personService.update(personToSave);
 
-                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-                    for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                        RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
-                        requirementService.update(requirementToSave);
-                    }
+            for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
+                    RequirementEntity requirementToSave = mapToRequirement(savedPerson, item, VaadinSession.getCurrent().getSession().getId());
+                    requirementService.update(requirementToSave);
                 }
-
-                notification.sendNotification("SMS çağrınız gönderildi.");
-
-                shareOnSMS(
-                        personToSave,
-                        itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-                );
             }
 
-        };
+            notification.sendNotification("SMS çağrınız gönderildi.");
+
+            shareOnSMS(
+                    personToSave,
+                    itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
+            );
+        }
+
+    }
+
+    private PersonEntity findOrCreatePerson(TextField phoneField, GeoLocation geoLocation) {
+        PersonEntity personToSave = mapToPerson(
+                null,
+                null,
+                phoneField,
+                geoLocation,
+                VaadinSession.getCurrent().getSession().getId()
+        );
+        return personToSave;
     }
 
     private void shareOnSMS(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
-        Double[] from = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
-        };
-
-        Double[] to = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
-        };
-
-        final var directionsUrl = "https://www.google.com/maps/dir" + "/" + from[0] + "," + from[1] + "/" + to[0] + ","
-                + to[1] + "/@" + to[0] + "," + to[1];
-
-
-        String absoluteUrl = "sms:+905312864182?&amp;body=" +
-                "ACİL%20YARDIM%20ÇAĞRISI!!!" +
-                "%20" +
-                "İhtiyacım%20olanlar:" +
-                "%20" +
-                requiredItems.stream()
-                        .map(it -> it.getTitle().replace(" ", "%20"))
-                        .collect(Collectors.joining("+")) +
-                "%20" +
-                "Konumum:" +
-                "%20" +
-                directionsUrl;
-
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", absoluteUrl));
+        final var sms = shareService.getShareUrl(savedPerson, requiredItems);
+        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", sms));
     }
 
-    private ComponentEventListener<ClickEvent<Button>> callHelpOnWhatsAppEvent() {
-        return onClick -> {
-            Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
+    private void callHelpOnWhatsAppEvent(
+            List<MultiSelectListBox<ItemEntity>> itemsCheck,
+            TextField phoneField,
+            GeoLocation geoLocation
+    ) {
+        Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
 
-            if (foundPerson.isPresent()) {
-                notification.sendNotification("Daha önce çağrınız mevcut.");
-            } else {
-                PersonEntity personToSave = mapToPerson();
-                PersonEntity savedPerson = personService.update(personToSave);
+        if (foundPerson.isPresent()) {
+            notification.sendNotification("Daha önce çağrınız mevcut.");
+        } else {
+            PersonEntity personToSave = findOrCreatePerson(phoneField, geoLocation);
+            PersonEntity savedPerson = personService.update(personToSave);
 
-                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-                    for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                        RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
-                        requirementService.update(requirementToSave);
-                    }
+            for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
+                    RequirementEntity requirementToSave = mapToRequirement(
+                            savedPerson,
+                            item,
+                            VaadinSession.getCurrent().getSession().getId()
+                    );
+                    requirementService.update(requirementToSave);
                 }
-
-                notification.sendNotification("Whatsapp çağrınız alındı.");
-
-                shareOnWhatsApp(
-                        personToSave,
-                        itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-                );
             }
 
-        };
+            notification.sendNotification("Whatsapp çağrınız alındı.");
+
+            shareOnWhatsApp(
+                    personToSave,
+                    itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
+            );
+        }
+
     }
 
-    private ComponentEventListener<ClickEvent<Button>> callHelpOnFacebookEvent() {
-        return onClick -> {
+    private void callHelpOnFacebookEvent(
+            List<MultiSelectListBox<ItemEntity>> itemsCheck,
+            TextField phoneField,
+            GeoLocation geoLocation
+    ) {
 
-            Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
+        Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
 
-            if (foundPerson.isPresent()) {
-                notification.sendNotification("Daha önce çağrınız mevcut.");
-            } else {
-                PersonEntity personToSave = mapToPerson();
-                PersonEntity savedPerson = personService.update(personToSave);
+        if (foundPerson.isPresent()) {
+            notification.sendNotification("Daha önce çağrınız mevcut.");
+        } else {
+            PersonEntity personToSave = findOrCreatePerson(phoneField, geoLocation);
+            PersonEntity savedPerson = personService.update(personToSave);
 
-                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-                    for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                        RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
-                        requirementService.update(requirementToSave);
-                    }
+            for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
+                    RequirementEntity requirementToSave = mapToRequirement(
+                            savedPerson,
+                            item,
+                            VaadinSession.getCurrent().getSession().getId()
+                    );
+                    requirementService.update(requirementToSave);
                 }
-
-                notification.sendNotification("Facebook çağrınız paylaşıldı.");
-
-                shareOnFacebook(
-                        personToSave,
-                        itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-                );
             }
-        };
+
+            notification.sendNotification("Facebook çağrınız paylaşıldı.");
+
+            shareOnFacebook(
+                    personToSave,
+                    itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
+            );
+        }
     }
 
     private void shareOnFacebook(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
@@ -369,34 +356,44 @@ public class HomeView extends VerticalLayout {
         getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", absoluteUrl));
     }
 
-    private ComponentEventListener<ClickEvent<Button>> callHelpOnTwitterEvent() {
+    private void callHelpOnTwitterEvent(
+            List<MultiSelectListBox<ItemEntity>> itemsCheck,
+            TextField phoneField,
+            TextField firstNameField,
+            TextField lastNameField,
+            GeoLocation geoLocation
+    ) {
 
-        return onSubmit -> {
 
-            Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
+        Optional<PersonEntity> foundPerson = personService.getByPhone(phoneField.getValue().trim());
 
-            if (foundPerson.isPresent()) {
-                notification.sendNotification("Daha önce çağrınız mevcut.");
-            } else {
-                PersonEntity personToSave = mapToPerson();
-                PersonEntity savedPerson = personService.update(personToSave);
+        if (foundPerson.isPresent()) {
+            notification.sendNotification("Daha önce çağrınız mevcut.");
+        } else {
+            PersonEntity personToSave = mapToPerson(
+                    firstNameField,
+                    lastNameField,
+                    phoneField,
+                    geoLocation,
+                    VaadinSession.getCurrent().getSession().getId()
+            );
+            PersonEntity savedPerson = personService.update(personToSave);
 
-                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-                    for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                        RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
-                        requirementService.update(requirementToSave);
-                    }
+            for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
+                    RequirementEntity requirementToSave = mapToRequirement(savedPerson, item, VaadinSession.getCurrent().getSession().getId());
+                    requirementService.update(requirementToSave);
                 }
-
-                notification.sendNotification("Çağrınız alındı. Lütfen çağrı kanalı seçiniz.");
-
-                shareOnTwitter(
-                        personToSave,
-                        itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-                );
             }
 
-        };
+            notification.sendNotification("Çağrınız alındı. Lütfen çağrı kanalı seçiniz.");
+
+            shareOnTwitter(
+                    personToSave,
+                    itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
+            );
+        }
+
     }
 
     private void shareOnTwitter(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
@@ -411,17 +408,24 @@ public class HomeView extends VerticalLayout {
         getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
     }
 
-    private PersonEntity mapToPerson() {
+    private PersonEntity mapToPerson(
+            TextField firstNameField,
+            TextField lastNameField,
+            TextField phoneField,
+            GeoLocation geoLocation,
+            String sessionId
+    ) {
         PersonEntity personEntity = new PersonEntity();
         personEntity.setFirstName(firstNameField.getValue());
         personEntity.setLastName(lastNameField.getValue());
         personEntity.setPhone(phoneField.getValue());
         personEntity.setLatitude(geoLocation.getValue().getLatitude());
         personEntity.setLongitude(geoLocation.getValue().getLongitude());
+        personEntity.setSessionId(sessionId);
         return personEntity;
     }
 
-    private RequirementEntity mapToRequirement(PersonEntity foundPerson, ItemEntity item) {
+    private RequirementEntity mapToRequirement(PersonEntity foundPerson, ItemEntity item, String sessionId) {
         RequirementEntity requirement = new RequirementEntity();
         requirement.setPerson(foundPerson);
         requirement.setItem(item);
@@ -436,15 +440,20 @@ public class HomeView extends VerticalLayout {
         return requirement;
     }
 
-    private void onFindMeClick(final ClickEvent<Button> event) {
+    private void onFindMeClick(GeoLocation geoLocation) {
 
-        var latitude = geoLocation.getValue() == null ? 0.0 : geoLocation.getValue().getLatitude();
-        var longitude = geoLocation.getValue() == null ? 0.0 : geoLocation.getValue().getLongitude();
-        this.map.setViewPoint(new LCenter(latitude, longitude, 8));
+        final var map = new LMap(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude(), 8);
+        map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
+        map.setSizeFull();
+        // TODO: add some logic here for called Markers (token)
+        map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
+        map.setCenter(new LCenter(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude()));
+        map.setViewPoint(new LCenter(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude(), 8));
 
-        final var markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
+        final var tagText = "Sorgu: " + geoLocation.getValue().getLatitude() + ", " + geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+        final var markerMyCoordinates = new LMarker(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude(), tagText);
 
-        this.map.addMarkerClickListener(onFindMeClick -> {
+        map.addMarkerClickListener(event -> {
             final var dialog = new Dialog();
 
             // Add a close button to the dialog
@@ -468,7 +477,9 @@ public class HomeView extends VerticalLayout {
 
         });
 
-        this.map.addLComponents(markerMyCoordinates);
+        map.addLComponents(markerMyCoordinates);
+
+        add(map);
 
     }
 

@@ -27,6 +27,8 @@ public class RequirementEntity extends AbstractEntity {
     @Max(10)
     private Integer priority;
 
+    private String description;
+
     public ItemEntity getItem() {
         return item;
     }
@@ -65,6 +67,14 @@ public class RequirementEntity extends AbstractEntity {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override

@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 @Service
 public class ShareService {
 
-    public String shareOnTwitter(PersonEntity savedPerson, List<ItemEntity> requiredItems,
-                                List<TagEntity> annotations, List<TagEntity> hashtags) {
+    public String shareOnTwitter(PersonEntity person, List<ItemEntity> requiredItems,
+                                 List<TagEntity> annotations, List<TagEntity> hashtags) {
         StringBuilder sb = new StringBuilder("https://twitter.com/share")
                 .append("?")
                 .append("text=ACİL YARDIM ÇAĞRISI!!! ")
@@ -31,9 +31,9 @@ public class ShareService {
                 .append("t=m")
                 .append("&")
                 .append("q=loc:")
-                .append(savedPerson.getLatitude())
+                .append(person.getLatitude())
                 .append("+")
-                .append(savedPerson.getLongitude());
+                .append(person.getLongitude());
 
         sb.append("&via=");
 
@@ -57,23 +57,23 @@ public class ShareService {
         return sb.toString();
     }
 
-    public String shareOnWhatsApp(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
+    public String shareOnWhatsApp(PersonEntity person, List<ItemEntity> requiredItems) {
 
         Double[] from = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
+                person.getLatitude(),
+                person.getLongitude()
         };
 
         Double[] to = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
+                person.getLatitude(),
+                person.getLongitude()
         };
 
         final var directionsUrl = "https://www.google.com/maps/dir" + "/" + from[0] + "," + from[1] + "/" + to[0] + ","
                 + to[1] + "/@" + to[0] + "," + to[1];
 
 
-        String absoluteUrl = "https://wa.me?text=" +
+        return "https://wa.me?text=" +
                 "ACİL%20YARDIM%20ÇAĞRISI!!!" +
                 "%20" +
                 "İhtiyacım%20olanlar:" +
@@ -85,8 +85,37 @@ public class ShareService {
                 "Konumum:" +
                 "%20" +
                 directionsUrl;
+    }
 
-        return absoluteUrl;
+    public String getShareUrl(PersonEntity person, List<ItemEntity> requiredItems) {
+        Double[] from = {
+                person.getLatitude(),
+                person.getLongitude()
+        };
+
+        Double[] to = {
+                person.getLatitude(),
+                person.getLongitude()
+        };
+
+        final var result = "https://www.google.com/maps/dir" + "/" + from[0] + "," + from[1] + "/" + to[0] + ","
+                + to[1] + "/@" + to[0] + "," + to[1];
+
+
+        String url = "sms:+905312864182?&amp;body=" +
+                "ACİL%20YARDIM%20ÇAĞRISI!!!" +
+                "%20" +
+                "İhtiyacım%20olanlar:" +
+                "%20" +
+                requiredItems.stream()
+                        .map(it -> it.getTitle().replace(" ", "%20"))
+                        .collect(Collectors.joining("+")) +
+                "%20" +
+                "Konumum:" +
+                "%20" +
+                result;
+
+        return url;
     }
 
 
