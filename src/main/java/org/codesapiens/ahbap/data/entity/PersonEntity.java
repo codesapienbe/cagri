@@ -34,6 +34,26 @@ public class PersonEntity extends AbstractEntity {
         this.phone = phone;
     }
 
+    public PersonEntity(String firstName, String lastName, String phone, String imageUrl) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
+        this.imageUrl = imageUrl;
+    }
+
+    public PersonEntity(String firstName, String lastName, String phone,
+                        String sessionId, String registeredAt,
+                        Double latitude, Double longitude) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
+        this.sessionId = sessionId;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.registeredAt = registeredAt;
+    }
+
+
     public String getFirstName() {
         return firstName;
     }

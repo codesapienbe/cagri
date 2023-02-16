@@ -50,6 +50,8 @@ public class HomeView extends VerticalLayout {
     private final TagService tagService;
     private final RequirementService requirementService;
 
+    private final ShareService shareService;
+
     private final LMap map;
 
     private final GeoLocation geoLocation;
@@ -64,26 +66,42 @@ public class HomeView extends VerticalLayout {
 
     private final NotificationService notification;
 
+    private PersonEntity currentPerson;
+
     /**
      * Constructor
      */
     public HomeView(PersonService personService, ItemService itemService, TagService tagService, RequirementService requirementService,
-                    GeoLocation geoLocation, NotificationService notification) {
+                    ShareService shareService, GeoLocation geoLocation, NotificationService notification) {
 
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
+        this.shareService = shareService;
         this.geoLocation = geoLocation;
         this.notification = notification;
 
-        initMainPageStyle();
-
         add(this.geoLocation);
+        StyleUtils.pageLayout(this.getElement());
 
         double defaultLatitude = 37.165867063341274;
         double defaultLongitude = 37.042596136246736;
-        this.map = new LMap(defaultLatitude, defaultLongitude, 10);
+
+        this.currentPerson = this.personService.getBySessionId(this.sessionId)
+                .orElse(new PersonEntity(
+                                this.sessionId,
+                                "",
+                                "",
+                                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now()),
+                                this.geoLocation.getValue() != null ? this.geoLocation.getValue().getLongitude() : defaultLatitude,
+                                this.geoLocation.getValue() != null ? this.geoLocation.getValue().getLatitude() : defaultLongitude
+                        )
+                );
+
+
+        this.map = new LMap(this.currentPerson.getLatitude(), this.currentPerson.getLongitude(), 8);
         this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
         this.map.setSizeFull();
         // add some logic here for called Markers (token)
@@ -95,55 +113,21 @@ public class HomeView extends VerticalLayout {
         accordion.setWidthFull();
 
         final var footerButtonsLayout = new HorizontalLayout();
-        initFooterLayoutStyle(footerButtonsLayout);
+        StyleUtils.footerLayout(footerButtonsLayout.getElement());
 
         final var btnFindMe = new Button("Ben neredeyim?");
-        initFooterButtonStyle(btnFindMe, "left", "#4caf50");
+        StyleUtils.footerButton(btnFindMe, "left", "#4caf50");
 
         btnFindMe.addClickListener(this::onFindMeClick);
 
         final var btnCallHelp = new Button("Çağrı Yap");
-        initFooterButtonStyle(btnCallHelp, "right", "#f44336");
+        StyleUtils.footerButton(btnCallHelp, "right", "#f44336");
 
         btnCallHelp.addClickListener(this::onCallHelpClick);
         footerButtonsLayout.add(btnFindMe, btnCallHelp);
 
         this.add(this.map, footerButtonsLayout);
         this.setSizeFull();
-    }
-
-    private static void initFooterButtonStyle(Button btnFindMe, String position, String background) {
-        btnFindMe.getStyle()
-                .set("background-color", background)
-                .set("color", "#fff")
-                .set("border", "none")
-                .set("border-radius", "5px")
-                .set(position, "0")
-                .set("bottom", "0")
-                .set("z-index", "1000");
-    }
-
-    private static void initFooterLayoutStyle(HorizontalLayout footerButtonsLayout) {
-        footerButtonsLayout.getStyle()
-                .set("position", "absolute")
-                .set("bottom", "0")
-                .set("width", "100%")
-                .set("padding", "10px")
-                .set("margin", "0")
-                .set("align-items", "center")
-                .set("justify-content", "space-between")
-                .set("background-color", "transparent")
-                .set("z-index", "1000");
-    }
-
-    private void initMainPageStyle() {
-        this.getStyle()
-                .set("background-color", "#f5f5f5")
-                .set("padding", "0")
-                .set("margin", "0")
-                .set("spacing", "0")
-                .set("border", "0")
-                .set("font-family", "Roboto, sans-serif");
     }
 
     private void onCallHelpClick(final ClickEvent<Button> event) {
@@ -416,87 +400,15 @@ public class HomeView extends VerticalLayout {
     }
 
     private void shareOnTwitter(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
-        StringBuilder sb = new StringBuilder("https://twitter.com/share")
-                .append("?")
-                .append("text=ACİL YARDIM ÇAĞRISI!!! ")
-                .append(("\n"))
-                .append("İhtiyacım olanlar: ")
-                .append(("\n"))
-                .append(
-                        requiredItems.stream()
-                                .map(ItemEntity::getTitle)
-                                .collect(Collectors.joining("+"))
-                )
-                .append("&")
-                .append("url=")
-                .append("https://maps.google.com/maps?z=12")
-                .append("&")
-                .append("t=m")
-                .append("&")
-                .append("q=loc:")
-                .append(savedPerson.getLatitude())
-                .append("+")
-                .append(savedPerson.getLongitude());
-
         List<TagEntity> annotations = tagService.listBySymbol('@');
-        sb.append("&via=");
-
-        for (int i = 0; i < annotations.size(); i++) {
-            TagEntity ann = annotations.get(i);
-            sb.append(ann.getTitle());
-            if (i < annotations.size() - 1) {
-                sb.append(",");
-            }
-        }
-
-        sb.append("&hashtags=");
         List<TagEntity> hashtags = tagService.listBySymbol('#');
-        for (int i = 0; i < hashtags.size(); i++) {
-            TagEntity htag = hashtags.get(i);
-            sb.append(htag.getTitle());
-            if (i != hashtags.size() - 1) {
-                sb.append(",");
-            }
-        }
-
-        String url = sb.toString();
+        final var url = this.shareService.shareOnTwitter(savedPerson, requiredItems, annotations, hashtags);
         getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
     }
 
-    private String convertTextToUri(String text) {
-        return text.replace(" ", "%20");
-    }
-
     private void shareOnWhatsApp(PersonEntity savedPerson, List<ItemEntity> requiredItems) {
-
-        Double[] from = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
-        };
-
-        Double[] to = {
-                savedPerson.getLatitude(),
-                savedPerson.getLongitude()
-        };
-
-        final var directionsUrl = "https://www.google.com/maps/dir" + "/" + from[0] + "," + from[1] + "/" + to[0] + ","
-                + to[1] + "/@" + to[0] + "," + to[1];
-
-
-        String absoluteUrl = "https://wa.me?text=" +
-                "ACİL%20YARDIM%20ÇAĞRISI!!!" +
-                "%20" +
-                "İhtiyacım%20olanlar:" +
-                "%20" +
-                requiredItems.stream()
-                        .map(it -> it.getTitle().replace(" ", "%20"))
-                        .collect(Collectors.joining("+")) +
-                "%20" +
-                "Konumum:" +
-                "%20" +
-                directionsUrl;
-
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", absoluteUrl));
+        final var url = this.shareService.shareOnWhatsApp(savedPerson, requiredItems);
+        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
     }
 
     private PersonEntity mapToPerson() {
@@ -522,14 +434,6 @@ public class HomeView extends VerticalLayout {
         requirement.setSessionId(sessionId);
 
         return requirement;
-    }
-
-    private static void styleButtonLayout(HorizontalLayout buttonsLayout) {
-        buttonsLayout.setPadding(false);
-        buttonsLayout.setSpacing(false);
-        buttonsLayout.setAlignItems(Alignment.CENTER);
-        buttonsLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-        buttonsLayout.setWidthFull();
     }
 
     private void onFindMeClick(final ClickEvent<Button> event) {
