@@ -5,7 +5,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Image;
@@ -61,7 +60,7 @@ public class HomeView extends VerticalLayout {
     private final TextField firstNameField = new TextField("Ad");
     private final TextField lastNameField = new TextField("Soyad");
 
-    private final List<CheckboxGroup<ItemEntity>> itemsCheck = new ArrayList<>();
+    private final List<MultiSelectListBox<ItemEntity>> itemsCheck = new ArrayList<>();
 
     private final String sessionId = VaadinSession.getCurrent().getSession().getId();
 
@@ -169,7 +168,7 @@ public class HomeView extends VerticalLayout {
         formLayout.add(phoneField, 2);
 
 
-        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(100, 0)).stream()
+        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
         itemsGroupedByCategory.forEach((category, items) -> {
@@ -251,7 +250,7 @@ public class HomeView extends VerticalLayout {
                 PersonEntity personToSave = mapToPerson();
                 PersonEntity savedPerson = personService.update(personToSave);
 
-                for (CheckboxGroup<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
                     for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
                         RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
                         requirementService.update(requirementToSave);
@@ -310,7 +309,7 @@ public class HomeView extends VerticalLayout {
                 PersonEntity personToSave = mapToPerson();
                 PersonEntity savedPerson = personService.update(personToSave);
 
-                for (CheckboxGroup<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
                     for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
                         RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
                         requirementService.update(requirementToSave);
@@ -339,7 +338,7 @@ public class HomeView extends VerticalLayout {
                 PersonEntity personToSave = mapToPerson();
                 PersonEntity savedPerson = personService.update(personToSave);
 
-                for (CheckboxGroup<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
                     for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
                         RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
                         requirementService.update(requirementToSave);
@@ -399,7 +398,7 @@ public class HomeView extends VerticalLayout {
                 PersonEntity personToSave = mapToPerson();
                 PersonEntity savedPerson = personService.update(personToSave);
 
-                for (CheckboxGroup<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
+                for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
                     for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
                         RequirementEntity requirementToSave = mapToRequirement(savedPerson, item);
                         requirementService.update(requirementToSave);
