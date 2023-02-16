@@ -2,7 +2,6 @@ package org.codesapiens.ahbap.views;
 
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.button.Button;
@@ -10,12 +9,11 @@ import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
@@ -24,16 +22,15 @@ import org.codesapiens.ahbap.data.entity.PersonEntity;
 import org.codesapiens.ahbap.data.entity.RequirementEntity;
 import org.codesapiens.ahbap.data.entity.TagEntity;
 import org.codesapiens.ahbap.data.service.*;
+import org.springframework.data.domain.PageRequest;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
-import org.vaadin.elmot.flow.sensors.Position;
 import software.xdev.vaadin.maps.leaflet.flow.LMap;
 import software.xdev.vaadin.maps.leaflet.flow.data.LCenter;
 import software.xdev.vaadin.maps.leaflet.flow.data.LMarker;
 import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -83,61 +80,53 @@ public class HomeView extends VerticalLayout {
         this.geoLocation = geoLocation;
         this.notification = notification;
 
-        this.getStyle()
-                .set("background-color", "#f5f5f5")
-                .set("padding", "0")
-                .set("margin", "0")
-                .set("spacing", "0")
-                .set("border", "0")
-                .set("font-family", "Roboto, sans-serif");
+        initMainPageStyle();
 
         add(this.geoLocation);
 
-        Position pos = geoLocation.getValue();
-
-        Double defaultLatitude = 37.165867063341274;
-        Double defaultLongitude = 37.042596136246736;
-        if (pos == null) {
-            pos = new Position();
-            pos.setLatitude(defaultLatitude);
-            pos.setLongitude(defaultLongitude);
-        } else {
-            pos = new Position();
-            pos.setLatitude(geoLocation.getValue().getLatitude());
-            pos.setLongitude(geoLocation.getValue().getLongitude());
-        }
-
-        var latitude = pos.getLatitude();
-        var longitude = pos.getLongitude();
-
-        this.markerMyCoordinates = new LMarker(
-                latitude != null ? latitude : defaultLatitude,
-                longitude != null ? longitude : defaultLongitude,
-                "Benim konumum"
-        );
-
-        this.markerMyCoordinates.setPopup("<strong>En yüksek şiddetteki depremin olduğu konum.</strong>");
-
-        this.map = new LMap(
-                latitude != null ? latitude : defaultLatitude,
-                longitude != null ? longitude : defaultLongitude,
-                6
-        );
+        double defaultLatitude = 37.165867063341274;
+        double defaultLongitude = 37.042596136246736;
+        this.map = new LMap(defaultLatitude, defaultLongitude, 10);
         this.map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
         this.map.setSizeFull();
         // add some logic here for called Markers (token)
         this.map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
-        this.map.addLComponents(this.markerMyCoordinates);
+
         this.setSizeFull();
 
         final var accordion = new Accordion();
         accordion.setWidthFull();
 
-        /**
-         * UI-Components
-         */
-
         final var footerButtonsLayout = new HorizontalLayout();
+        initFooterLayoutStyle(footerButtonsLayout);
+
+        final var btnFindMe = new Button("Ben neredeyim?");
+        initFooterButtonStyle(btnFindMe, "left", "#4caf50");
+
+        btnFindMe.addClickListener(this::onFindMeClick);
+
+        final var btnCallHelp = new Button("Çağrı Yap");
+        initFooterButtonStyle(btnCallHelp, "right", "#f44336");
+
+        btnCallHelp.addClickListener(this::onCallHelpClick);
+        footerButtonsLayout.add(btnFindMe, btnCallHelp);
+
+        this.add(this.map, footerButtonsLayout);
+        this.setSizeFull();
+    }
+
+    private static void initFooterButtonStyle(Button btnFindMe, String position, String background) {
+        btnFindMe.getStyle()
+                .set("background-color", background)
+                .set("color", "#fff")
+                .set("border", "none")
+                .set("border-radius", "5px")
+                .set(position, "0")
+                .set("bottom", "0")
+                .set("z-index", "1000");
+    }
+
+    private static void initFooterLayoutStyle(HorizontalLayout footerButtonsLayout) {
         footerButtonsLayout.getStyle()
                 .set("position", "absolute")
                 .set("bottom", "0")
@@ -148,34 +137,16 @@ public class HomeView extends VerticalLayout {
                 .set("justify-content", "space-between")
                 .set("background-color", "transparent")
                 .set("z-index", "1000");
+    }
 
-        final var btnFindMe = new Button("Ben neredeyim?");
-        btnFindMe.getStyle()
-                .set("background-color", "#4caf50")
-                .set("color", "#fff")
-                .set("border", "none")
-                .set("border-radius", "5px")
-                .set("left", "0")
-                .set("bottom", "0")
-                .set("z-index", "1000");
-
-        btnFindMe.addClickListener(this::onFindMeClickEvent);
-
-        final var btnCallHelp = new Button("Çağrı Yap");
-        btnCallHelp.getStyle()
-                .set("background-color", "#f44336")
-                .set("color", "#fff")
-                .set("border", "none")
-                .set("border-radius", "5px")
-                .set("right", "0")
-                .set("bottom", "0")
-                .set("z-index", "1000");
-
-        btnCallHelp.addClickListener(this::onCallHelpClick);
-        footerButtonsLayout.add(btnFindMe, btnCallHelp);
-
-        this.add(this.map, footerButtonsLayout);
-        this.setSizeFull();
+    private void initMainPageStyle() {
+        this.getStyle()
+                .set("background-color", "#f5f5f5")
+                .set("padding", "0")
+                .set("margin", "0")
+                .set("spacing", "0")
+                .set("border", "0")
+                .set("font-family", "Roboto, sans-serif");
     }
 
     private void onCallHelpClick(final ClickEvent<Button> event) {
@@ -196,6 +167,17 @@ public class HomeView extends VerticalLayout {
 
         formLayout.add(firstNameField, lastNameField);
         formLayout.add(phoneField, 2);
+
+
+        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(100, 0)).stream()
+                .collect(Collectors.groupingBy(ItemEntity::getCategory));
+
+        itemsGroupedByCategory.forEach((category, items) -> {
+            final var lBox = new MultiSelectListBox<>();
+            lBox.setItems(items);
+
+            formLayout.add(lBox, 2);
+        });
 
         dialog.add(formLayout);
 
@@ -222,8 +204,9 @@ public class HomeView extends VerticalLayout {
         callHelpOnFacebookIcon.setWidth("50px");
         callHelpOnFacebookIcon.setHeight("50px");
         final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon, callHelpOnFacebookEvent());
-        // TODO: fix it later it does not work
         styleDialogButton(callHelpOnFacebookButton);
+        // TODO: fix it later it does not work
+        callHelpOnFacebookButton.setEnabled(false);
         buttonsLayout.add(
                 callHelpOnFacebookButton
         );
@@ -551,67 +534,35 @@ public class HomeView extends VerticalLayout {
         buttonsLayout.setWidthFull();
     }
 
-    private void onFindMeClickEvent(final ClickEvent<Button> event) {
-        Double latitude = geoLocation.getValue().getLatitude();
-        Double longitude = geoLocation.getValue().getLongitude();
-        this.map.setViewPoint(new LCenter(latitude, longitude, 16));
+    private void onFindMeClick(final ClickEvent<Button> event) {
 
-        this.markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
+        var latitude = geoLocation.getValue() == null ? 0.0 : geoLocation.getValue().getLatitude();
+        var longitude = geoLocation.getValue() == null ? 0.0 : geoLocation.getValue().getLongitude();
+        this.map.setViewPoint(new LCenter(latitude, longitude, 8));
+
+        if (this.markerMyCoordinates == null) {
+            this.markerMyCoordinates = new LMarker(latitude, longitude, "Benim konumum");
+        } else {
+            this.markerMyCoordinates.setLat(latitude);
+            this.markerMyCoordinates.setLon(longitude);
+        }
+
         this.map.addMarkerClickListener(onFindMeClick -> {
-            Dialog dialog = new Dialog();
-
-            // Add a profile layout to the dialog which has a close button, a title and a description
-            VerticalLayout profileLayout = new VerticalLayout();
+            final var dialog = new Dialog();
 
             // Add a close button to the dialog
-            Button closeButton = new Button("Kapat", closeProfileView -> dialog.close());
-            profileLayout.add(closeButton);
+            final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> dialog.close());
 
-            // Add a title to the dialog
-            profileLayout.add(new Text("Konumunuz: " + latitude + ":" + longitude));
+            // Add the user profile layout to the dialog
+            final var profileLayout = new UserProfileLayout(
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                    "John Doe",
+                    "+90 555 555 55 55",
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now())
+            );
 
-            // Create an avatar image view with a default image
-            Image avatar = new Image("https://i.imgur.com/9YcVw9p.jpg", "Avatar");
-            avatar.setWidth("100px");
-            avatar.setHeight("100px");
-            profileLayout.add(avatar);
-
-            // Add a description to the dialog
-            profileLayout.add(new Text("Bu konumunuzun doğruluğunu doğrulamak için lütfen bir fotoğraf yükleyiniz."));
-
-            if (avatar.getSrc().equals("https://i.imgur.com/9YcVw9p.jpg")) {
-                avatar.setVisible(false);
-            }
-
-            // Add a file upload to the dialog
-            Upload upload = new Upload();
-            upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/gif");
-            upload.setMaxFileSize(1000000);
-
-            // firstly set the receiver implementation with upload.setReceiver
-            upload.setReceiver((fileName, mimeType) -> {
-                // Create a file with the same name as the uploaded file in the user's home directory
-                File file = new File(System.getProperty("user.home") + "/Desktop/" + fileName);
-                try {
-                    return new FileOutputStream(file);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            });
-
-            upload.setDropLabel(new Label("Fotoğrafınızı buraya sürükleyin"));
-            Button uploadButton = new Button("Fotoğraf yükle");
-
-            upload.addSucceededListener(onUploadSucceeded -> {
-                avatar.setSrc(onUploadSucceeded.getFileName());
-                avatar.setVisible(true);
-            });
-
-            upload.setUploadButton(uploadButton);
-
-            profileLayout.add(upload);
-
+            // Add the button to the dialog
+            dialog.add(closeButton);
             dialog.add(profileLayout);
 
             dialog.open();
@@ -620,7 +571,8 @@ public class HomeView extends VerticalLayout {
 
         });
 
-        this.map.addLComponents(markerMyCoordinates);
+        this.map.addLComponents(this.markerMyCoordinates);
+
     }
 
 }
