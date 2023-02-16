@@ -11,4 +11,6 @@ public interface PersonRepository extends JpaRepository<PersonEntity, UUID> {
     Optional<PersonEntity> findByPhone(String phone);
 
     Optional<PersonEntity> findByFirstNameLikeOrLastNameLike(String firstName, String lastName);
+
+    Optional<PersonEntity> findBySessionId(String sessionId);
 }

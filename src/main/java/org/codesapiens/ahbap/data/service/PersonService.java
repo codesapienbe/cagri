@@ -27,6 +27,10 @@ public class PersonService {
         return repository.findByPhone(phone);
     }
 
+    public Optional<PersonEntity> getBySessionId(String sessionId) {
+        return repository.findBySessionId(sessionId);
+    }
+
     public PersonEntity update(PersonEntity entity) {
         return repository.save(entity);
     }
