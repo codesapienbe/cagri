@@ -109,13 +109,18 @@ public class StyleUtils {
         if (category.equals("Medical") || category.equals("Health") || category.equals("Healthcare") ||
                 category.equals("Medikal") || category.equals("Sağlık") || category.equals("Sağlık Hizmetleri")) {
             selectedColor = medicalColor;
-        } else if (category.equals("Food") || category.equals("Yiyecek") || category.equals("Yiyecek Yardımı")) {
+        } else if (category.equals("Food") || category.equals("Yiyecek") || category.equals("Yiyecek Yardımı")
+        || category.equals("Gıda") || category.equals("Gıda Yardımı") || category.equals("Yiyecek İçecek")) {
             selectedColor = foodColor;
-        } else if (category.equals("Clothing") || category.equals("Giyim") || category.equals("Giyim Yardımı")) {
+        } else if (category.equals("Clothing") || category.equals("Giyim") || category.equals("Giyim Yardımı")
+        || category.equals("Kıyafet") || category.equals("Kıyafet Yardımı") || category.equals("Kıyafet Giyim")) {
             selectedColor = clothingColor;
-        } else if (category.equals("Shelter") || category.equals("Konaklama") || category.equals("Konaklama Yardımı")) {
+        } else if (category.equals("Shelter") || category.equals("Konaklama") || category.equals("Konaklama Yardımı")
+        || category.equals("Barınma") || category.equals("Barınma Yardımı") || category.equals("Barınma Konaklama") ||
+                category.equals("Ev") || category.equals("Ev Yardımı") || category.equals("Ev Konaklama")) {
             selectedColor = shelterColor;
-        } else if (category.equals("Transportation") || category.equals("Ulaşım") || category.equals("Ulaşım Yardımı")) {
+        } else if (category.equals("Transportation") || category.equals("Ulaşım") || category.equals("Ulaşım Yardımı")
+        || category.equals("Taşıma") || category.equals("Taşıma Yardımı") || category.equals("Taşıma Ulaşım")) {
             selectedColor = transportationColor;
         } else if (category.equals("Education") || category.equals("Eğitim") || category.equals("Eğitim Yardımı")) {
             selectedColor = educationColor;
@@ -124,11 +129,9 @@ public class StyleUtils {
         accordionPanel.getStyle()
                 .set("background-color", selectedColor)
                 .set("border-radius", "5px")
-                .set("padding", "10px")
-                .set("margin", "10px")
-                .set("width", "100%")
-                .set("height", "75%")
-                .set("color", "white");
+                .set("margin", "0px")
+                .set("padding", "0px")
+                .set("width", "100%");
     }
 
     public static void styleAccordion(Accordion accordion) {

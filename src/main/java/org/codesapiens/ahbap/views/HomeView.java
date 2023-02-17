@@ -88,7 +88,7 @@ public class HomeView extends VerticalLayout {
         styleTextField(phoneField);
 
         final var btnRequirements = new Button("İhtiyaçlar");
-        // background Turkoise
+        // background Turquoise
         footerButton(btnRequirements, "right", "#00bcd4");
 
         btnRequirements.addClickListener(onClick -> onCallHelpClick(this.geoLocation));
