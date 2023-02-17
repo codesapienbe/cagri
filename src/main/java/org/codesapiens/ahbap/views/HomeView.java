@@ -1,6 +1,5 @@
 package org.codesapiens.ahbap.views;
 
-import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
@@ -98,8 +97,7 @@ public class HomeView extends VerticalLayout {
         headerLayout(headerLayout.getElement());
 
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
-        callHelpOnTwitterIcon.setWidth("50px");
-        callHelpOnTwitterIcon.setHeight("50px");
+        styleIcon(callHelpOnTwitterIcon);
         final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon,
                 onClick -> callHelpOnTwitterEvent(
                         this.getChildren()
@@ -108,11 +106,10 @@ public class HomeView extends VerticalLayout {
                                 .collect(Collectors.toList())
                 )
         );
-        dialogButton(callHelpOnTwitterButton.getElement());
+        styleDialogButton(callHelpOnTwitterButton.getElement());
 
         final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
-        callHelpOnFacebookIcon.setWidth("50px");
-        callHelpOnFacebookIcon.setHeight("50px");
+        styleIcon(callHelpOnFacebookIcon);
         final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
                 onClick -> callHelpOnFacebookEvent(
                         this.getChildren()
@@ -121,31 +118,29 @@ public class HomeView extends VerticalLayout {
                                 .collect(Collectors.toList())
                 )
         );
-        dialogButton(callHelpOnFacebookButton.getElement());
+        styleDialogButton(callHelpOnFacebookButton.getElement());
         // TODO: fix it later it does not work
         callHelpOnFacebookButton.setEnabled(false);
 
         final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
-        callHelpOnWhatsAppIcon.setWidth("50px");
-        callHelpOnWhatsAppIcon.setHeight("50px");
+        styleIcon(callHelpOnWhatsAppIcon);
         final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, onClick -> callHelpOnWhatsAppEvent(
                 this.getChildren()
                         .filter(component -> component instanceof MultiSelectListBox)
                         .map(component -> (MultiSelectListBox<ItemEntity>) component)
                         .collect(Collectors.toList())
         ));
-        dialogButton((callHelpOnWhatsAppButton.getElement()));
+        styleDialogButton((callHelpOnWhatsAppButton.getElement()));
 
         final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
-        callHelpOnSmsIcon.setWidth("50px");
-        callHelpOnSmsIcon.setHeight("50px");
+        styleIcon(callHelpOnSmsIcon);
         final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, onClick -> callHelpOnSmsEvent(
                 this.getChildren()
                         .filter(component -> component instanceof MultiSelectListBox)
                         .map(component -> (MultiSelectListBox<ItemEntity>) component)
                         .collect(Collectors.toList())
         ));
-        dialogButton(callHelpOnSmsButton.getElement());
+        styleDialogButton(callHelpOnSmsButton.getElement());
 
         headerLayout.add(
                 callHelpOnTwitterButton,
@@ -166,8 +161,7 @@ public class HomeView extends VerticalLayout {
         final var icoClose = VaadinIcon.CLOSE.create();
 
         final var dialog = new Dialog(icoClose);
-        dialog.setMaxHeight(90, Unit.PERCENTAGE);
-        dialog.setMaxWidth(80, Unit.PERCENTAGE);
+        dialog.setModal(true);
         dialog.setCloseOnEsc(false);
         dialog.setDraggable(true);
 

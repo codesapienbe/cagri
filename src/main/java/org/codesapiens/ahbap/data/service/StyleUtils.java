@@ -3,6 +3,7 @@ package org.codesapiens.ahbap.data.service;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
 
@@ -53,7 +54,7 @@ public class StyleUtils {
                 .set("z-index", "1000");
     }
 
-    public static void dialogButton(Element element) {
+    public static void styleDialogButton(Element element) {
         element.getStyle()
                 .set("margin-top", "1em")
                 .set("color", "white")
@@ -124,6 +125,14 @@ public class StyleUtils {
             selectedColor = transportationColor;
         } else if (category.equals("Education") || category.equals("Eğitim") || category.equals("Eğitim Yardımı")) {
             selectedColor = educationColor;
+        } else if (category.equals("Baby") || category.equals("Bebek") || category.equals("Bebek Yardımı")) {
+            selectedColor = "#e91e63";
+        }
+        else if (category.equals("Hygene") || category.equals("Hijyen") || category.equals("Hijyen Yardımı")) {
+            selectedColor = "#ffeb3b";
+        }
+        else if (category.equals("Other") || category.equals("Diğer") || category.equals("Diğer Yardım")) {
+            selectedColor = "#9e9e9e";
         }
 
         accordionPanel.getStyle()
@@ -132,6 +141,11 @@ public class StyleUtils {
                 .set("margin", "0px")
                 .set("padding", "0px")
                 .set("width", "100%");
+    }
+
+    public static void styleIcon(Image callHelpOnSmsIcon) {
+        callHelpOnSmsIcon.setWidth("50px");
+        callHelpOnSmsIcon.setHeight("50px");
     }
 
     public static void styleAccordion(Accordion accordion) {
