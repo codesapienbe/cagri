@@ -1,5 +1,9 @@
 package org.codesapiens.ahbap.data.entity;
 
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -7,12 +11,16 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tags")
+// HIBERNATE SEARCH
+@Indexed
 public class TagEntity extends AbstractEntity {
 
     @Column(nullable = false, unique = true)
+    @FullTextField
     private String title;
 
     @Column(unique = true)
+    @KeywordField
     private String url;
 
     private Character symbol;

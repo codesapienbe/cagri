@@ -8,7 +8,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.Objects;
 
-@Tag("vaadin-user-profile-layout")
+@Tag("vaadin-profile-layout")
 public class ProfileLayout extends HorizontalLayout {
 
     public ProfileLayout(String imageUrl, String fullName, String phoneNumber, String requestTime) {

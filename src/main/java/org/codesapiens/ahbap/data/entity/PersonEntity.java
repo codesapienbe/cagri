@@ -1,5 +1,10 @@
 package org.codesapiens.ahbap.data.entity;
 
+import org.codesapiens.ahbap.data.Name;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -8,10 +13,19 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "people")
+// HIBERNATE SEARCH
+@Indexed
 public class PersonEntity extends AbstractEntity {
 
+    @FullTextField
+    @Name
     private String firstName;
+
+    @FullTextField
+    @Name
     private String lastName;
+
+    @FullTextField
     @Column(nullable = false, unique = true)
     private String phone;
 
@@ -19,10 +33,12 @@ public class PersonEntity extends AbstractEntity {
 
     private Double longitude;
 
+    @KeywordField
     private String imageUrl;
 
     private String registeredAt;
 
+    @KeywordField
     private String sessionId;
 
     public PersonEntity() {

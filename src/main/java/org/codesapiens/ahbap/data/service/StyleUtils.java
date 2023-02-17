@@ -1,6 +1,7 @@
 package org.codesapiens.ahbap.data.service;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
 
 public class StyleUtils {
@@ -76,5 +77,48 @@ public class StyleUtils {
                 .set("align-items", "center")
                 .set("justify-content", "center")
                 .set("height", "100vh");
+    }
+
+    public static void headerLayout(Element element) {
+        element.getStyle()
+                .set("position", "absolute")
+                .set("top", "20px")
+                .set("width", "100%")
+                .set("padding", "10px")
+                .set("margin", "0")
+                .set("align-items", "center")
+                // center the header
+                .set("justify-content", "center")
+                .set("background-color", "transparent")
+                .set("z-index", "1000");
+    }
+
+    public static void styleTextField(TextField element) {
+        // add glass effect to element
+        element.getStyle()
+                .set("background", "rgba(255, 255, 255, 0.4)")
+                .set("border", "1px solid rgba(255, 255, 255, 0.4)")
+                .set("border-radius", "5px")
+                .set("padding", "5px")
+                .set("margin", "5px");
+        element.setPlaceholder("Telefon Numarası");
+        // Set constraint validation for Turkish phone numbers
+        element.setPattern("^\\+?\\d{10,13}$");
+        element.setRequiredIndicatorVisible(true);
+        element.setRequired(true);
+        element.focus();
+        element.setWidth("200px");
+        element.setMaxWidth("280px");
+    }
+
+    public static void footerTextField(TextField phoneField) {
+        phoneField.getStyle()
+                .set("background-color", "#fff")
+                .set("color", "#000")
+                .set("border", "none")
+                .set("border-radius", "5px")
+                .set("padding", "10px")
+                .set("margin", "0")
+                .set("z-index", "1000");
     }
 }

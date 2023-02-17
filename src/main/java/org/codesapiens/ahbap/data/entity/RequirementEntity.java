@@ -1,5 +1,9 @@
 package org.codesapiens.ahbap.data.entity;
 
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -10,9 +14,12 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "requirements")
+// HIBERNATE SEARCH
+@Indexed
 public class RequirementEntity extends AbstractEntity {
 
     @Column(nullable = false)
+    @KeywordField
     private String sessionId;
 
     @ManyToOne(optional = false)
@@ -27,6 +34,7 @@ public class RequirementEntity extends AbstractEntity {
     @Max(10)
     private Integer priority;
 
+    @FullTextField
     private String description;
 
     public ItemEntity getItem() {

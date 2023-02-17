@@ -14,6 +14,9 @@
         <java.version>11</java.version>
         <vaadin.version>23.2.2</vaadin.version>
         <selenium.version>4.4.0</selenium.version>
+        <hibernate.version>5.4.23.Final</hibernate.version>
+        <jjwt.version>0.9.0</jjwt.version>
+        <spring-boot.build-image.imageName>$DOCKER_USER_NAME$/${parent.artifactId}-${project.artifactId}</spring-boot.build-image.imageName>
     </properties>
 
     <parent>
@@ -173,6 +176,60 @@
             <groupId>org.vaadin.addons.gl0b3</groupId>
             <artifactId>materialicons-flow</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-mapper-orm</artifactId>
+            <version>6.0.0.CR2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-backend-lucene</artifactId>
+            <version>6.0.0.CR2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.javamoney</groupId>
+            <artifactId>moneta</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+
+        <!-- TEST FRAMEWORK: mockito -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- PRECOMPILE CODE GENERATOR: lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version>
+        </dependency>
+
+        <!-- ADVANCED OBJECT MAPPER: mapstruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>            <!-- use mapstruct-jdk8 for Java 8 or higher -->
+            <version>1.4.2.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
         </dependency>
 
     </dependencies>

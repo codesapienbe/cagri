@@ -6,7 +6,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.List;
 
-@Tag("vaadin-latest-messages-layout")
+@Tag("vaadin-message-layout")
 public class MessageLayout extends VerticalLayout {
 
     public MessageLayout(String userName, List<String> messages) {
