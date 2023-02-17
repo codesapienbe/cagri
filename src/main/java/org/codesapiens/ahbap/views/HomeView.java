@@ -2,6 +2,7 @@ package org.codesapiens.ahbap.views;
 
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.accordion.Accordion;
+import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
@@ -73,9 +74,6 @@ public class HomeView extends VerticalLayout {
         geoLocation.setMaxAge(200000);
         add(geoLocation);
 
-        final var accordion = new Accordion();
-        accordion.setWidthFull();
-
         final var footerButtonsLayout = new HorizontalLayout();
         footerLayout(footerButtonsLayout.getElement());
 
@@ -84,6 +82,9 @@ public class HomeView extends VerticalLayout {
         btnFindMe.addClickListener(onClick -> onFindMeClick());
 
         final var phoneField = new TextField();
+        phoneField.addValueChangeListener(e -> {
+            this.currentPerson.setPhone(e.getValue());
+        });
         styleTextField(phoneField);
 
         final var btnRequirements = new Button("İhtiyaçlar");
@@ -96,22 +97,65 @@ public class HomeView extends VerticalLayout {
         final var headerLayout = new HorizontalLayout();
         headerLayout(headerLayout.getElement());
 
-        final var whatsapp = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
-        whatsapp.setWidth("50px");
-        whatsapp.setHeight("50px");
+        final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
+        callHelpOnTwitterIcon.setWidth("50px");
+        callHelpOnTwitterIcon.setHeight("50px");
+        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon,
+                onClick -> callHelpOnTwitterEvent(
+                        this.getChildren()
+                                .filter(component -> component instanceof MultiSelectListBox)
+                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                                .collect(Collectors.toList())
+                )
+        );
+        dialogButton(callHelpOnTwitterButton.getElement());
 
-        final var twitter = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "Twitter");
-        twitter.setWidth("50px");
-        twitter.setHeight("50px");
+        final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
+        callHelpOnFacebookIcon.setWidth("50px");
+        callHelpOnFacebookIcon.setHeight("50px");
+        final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
+                onClick -> callHelpOnFacebookEvent(
+                        this.getChildren()
+                                .filter(component -> component instanceof MultiSelectListBox)
+                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                                .collect(Collectors.toList())
+                )
+        );
+        dialogButton(callHelpOnFacebookButton.getElement());
+        // TODO: fix it later it does not work
+        callHelpOnFacebookButton.setEnabled(false);
+
+        final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
+        callHelpOnWhatsAppIcon.setWidth("50px");
+        callHelpOnWhatsAppIcon.setHeight("50px");
+        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, onClick -> callHelpOnWhatsAppEvent(
+                this.getChildren()
+                        .filter(component -> component instanceof MultiSelectListBox)
+                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                        .collect(Collectors.toList())
+        ));
+        dialogButton((callHelpOnWhatsAppButton.getElement()));
+
+        final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
+        callHelpOnSmsIcon.setWidth("50px");
+        callHelpOnSmsIcon.setHeight("50px");
+        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, onClick -> callHelpOnSmsEvent(
+                this.getChildren()
+                        .filter(component -> component instanceof MultiSelectListBox)
+                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
+                        .collect(Collectors.toList())
+        ));
+        dialogButton(callHelpOnSmsButton.getElement());
 
         headerLayout.add(
-                whatsapp,
-                twitter
+                callHelpOnTwitterButton,
+                callHelpOnFacebookButton,
+                callHelpOnWhatsAppButton,
+                callHelpOnSmsButton
         );
 
         add(
                 headerLayout,
-                accordion,
                 footerButtonsLayout
         );
 
@@ -132,84 +176,34 @@ public class HomeView extends VerticalLayout {
         final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
+        final var accordion = new Accordion();
+        // add glass effect to accordion
+        styleAccordion(accordion);
+
         itemsGroupedByCategory.forEach((category, items) -> {
+
+            final var accordionPanel = new AccordionPanel(category);
+            accordionPanel.setWidthFull();
+
             final var lBox = new MultiSelectListBox<ItemEntity>();
             lBox.setItems(items);
             lBox.setItemLabelGenerator(ItemEntity::getTitle);
+            lBox.setSizeFull();
 
-            dialog.add(lBox);
+            // change color for each accordion panel
+            styleAccordionItem(accordionPanel, category);
+
+            accordionPanel.setSummaryText(category + " (" + items.size() + " adet ihtiyaç" + ")");
+            accordionPanel.addContent(lBox);
+
+            accordion.add(accordionPanel);
+
         });
 
-        final var buttonsLayout = new HorizontalLayout();
-        shareButtons(buttonsLayout.getElement());
-
-        final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
-        callHelpOnTwitterIcon.setWidth("50px");
-        callHelpOnTwitterIcon.setHeight("50px");
-        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon,
-                onClick -> callHelpOnTwitterEvent(
-                        this.getChildren()
-                                .filter(component -> component instanceof MultiSelectListBox)
-                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                                .collect(Collectors.toList())
-                )
-        );
-        dialogButton(callHelpOnTwitterButton.getElement());
-        buttonsLayout.add(
-                callHelpOnTwitterButton
-        );
-
-        final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
-        callHelpOnFacebookIcon.setWidth("50px");
-        callHelpOnFacebookIcon.setHeight("50px");
-        final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
-                onClick -> callHelpOnFacebookEvent(
-                        this.getChildren()
-                                .filter(component -> component instanceof MultiSelectListBox)
-                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                                .collect(Collectors.toList())
-                )
-        );
-        dialogButton(callHelpOnFacebookButton.getElement());
-        // TODO: fix it later it does not work
-        callHelpOnFacebookButton.setEnabled(false);
-        buttonsLayout.add(
-                callHelpOnFacebookButton
-        );
-
-        final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
-        callHelpOnWhatsAppIcon.setWidth("50px");
-        callHelpOnWhatsAppIcon.setHeight("50px");
-        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, onClick -> callHelpOnWhatsAppEvent(
-                this.getChildren()
-                        .filter(component -> component instanceof MultiSelectListBox)
-                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                        .collect(Collectors.toList())
-        ));
-        dialogButton((callHelpOnWhatsAppButton.getElement()));
-        buttonsLayout.add(
-                callHelpOnWhatsAppButton
-        );
-
-        final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
-        callHelpOnSmsIcon.setWidth("50px");
-        callHelpOnSmsIcon.setHeight("50px");
-        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, onClick -> callHelpOnSmsEvent(
-                this.getChildren()
-                        .filter(component -> component instanceof MultiSelectListBox)
-                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                        .collect(Collectors.toList())
-        ));
-        dialogButton(callHelpOnSmsButton.getElement());
-        buttonsLayout.add(
-                callHelpOnSmsButton
-        );
-
-        dialog.add(buttonsLayout);
+        dialog.add(accordion);
 
         icoClose.addClickListener(iev -> dialog.close());
     }
-
 
     private void callHelpOnSmsEvent(
             List<MultiSelectListBox<ItemEntity>> itemsCheck
