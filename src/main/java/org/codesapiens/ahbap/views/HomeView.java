@@ -43,7 +43,6 @@ public class HomeView extends VerticalLayout {
     private final ItemService itemService;
     private final TagService tagService;
     private final RequirementService requirementService;
-    private final ShareService shareService;
 
     /**
      * ItemCheckBoxes are used to create a list of requirements
@@ -73,14 +72,12 @@ public class HomeView extends VerticalLayout {
     private final AtomicInteger findMeClickCount = new AtomicInteger(0);
 
     public HomeView(PersonService personService, ItemService itemService,
-                    TagService tagService, RequirementService requirementService,
-                    ShareService shareService) {
+                    TagService tagService, RequirementService requirementService) {
 
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
-        this.shareService = shareService;
 
         pageBackground(getElement());
 
@@ -89,6 +86,12 @@ public class HomeView extends VerticalLayout {
         geoLocation.setTimeout(100000);
         geoLocation.setMaxAge(200000);
         add(geoLocation);
+
+        if(VaadinSession.getCurrent().getAttribute("person") != null) {
+            this.currentPerson = (PersonEntity) VaadinSession.getCurrent().getAttribute("person");
+        } else {
+            this.currentPerson = new PersonEntity();
+        }
 
         footerLayout(footerButtonsLayout.getElement());
 
