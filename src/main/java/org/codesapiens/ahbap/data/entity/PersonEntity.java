@@ -18,11 +18,9 @@ import java.util.Objects;
 public class PersonEntity extends AbstractEntity {
 
     @FullTextField
-    @Name
     private String firstName;
 
     @FullTextField
-    @Name
     private String lastName;
 
     @FullTextField
