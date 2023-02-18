@@ -352,9 +352,10 @@ public class HomeView extends VerticalLayout {
                 // Add the user profile layout to the dialog
                 final var profileLayout = new ProfileLayout(
                         "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                        "John Doe",
-                        "+90 555 555 55 55",
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now())
+                        this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
+                        this.currentPerson.getPhone(),
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
+                        getRequirementsFromItemBoxes()
                 );
 
                 // Add the button to the dialog
