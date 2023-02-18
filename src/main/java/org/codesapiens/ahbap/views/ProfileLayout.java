@@ -31,10 +31,10 @@ public class ProfileLayout extends HorizontalLayout {
         userDetailsLayout.setSpacing(true);
         userDetailsLayout.setWidthFull();
 
-        final var fullNameLabel = new Label("Full Name: " + fullName);
+        final var fullNameLabel = new Label(fullName);
         final var phoneLabel = new Label("Phone: " + phoneNumber);
-        final var requestTimeLabel = new Label("Request Time: " + requestTime);
-        final var requirementsLabel = new Label("Requirements: " + requirements);
+        final var requestTimeLabel = new Label("Çağrı tarihi: " + requestTime);
+        final var requirementsLabel = new Label("İhtiyaçlar: " + requirements);
 
         userDetailsLayout.add(fullNameLabel, phoneLabel, requestTimeLabel, requirementsLabel);
         add(userDetailsLayout);
