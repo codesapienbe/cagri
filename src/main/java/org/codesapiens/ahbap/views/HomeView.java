@@ -5,13 +5,16 @@ import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
 import org.codesapiens.ahbap.data.entity.PersonEntity;
+import org.codesapiens.ahbap.data.entity.RequirementEntity;
 import org.codesapiens.ahbap.data.service.*;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
@@ -41,7 +44,6 @@ public class HomeView extends VerticalLayout {
     private final TagService tagService;
     private final RequirementService requirementService;
     private final ShareService shareService;
-    private final NotificationService notification;
 
     /**
      * ItemCheckBoxes are used to create a list of requirements
@@ -72,14 +74,13 @@ public class HomeView extends VerticalLayout {
 
     public HomeView(PersonService personService, ItemService itemService,
                     TagService tagService, RequirementService requirementService,
-                    ShareService shareService, NotificationService notification) {
+                    ShareService shareService) {
 
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
         this.shareService = shareService;
-        this.notification = notification;
 
         pageBackground(getElement());
 
@@ -286,11 +287,30 @@ public class HomeView extends VerticalLayout {
                     ).flatMap(Collection::stream)
                     .collect(Collectors.toList());
 
-            this.notification.sendNotification(
-                    "İhtiyaçlarınız başarıyla kaydedildi.\n" +
-                            "Şimdi yardım talebinizi oluşturabilirsiniz.\n" +
-                            "Lütfen yukarıdaki paylaşım butonlarından birini kullanarak yardım talebinizi paylaşın."
-            );
+            for (ItemEntity item : selectedItems) {
+                RequirementEntity newReq = new RequirementEntity();
+                newReq.setItem(item);
+
+                String phoneNumber = this.currentPerson.getPhone();
+                if (this.personService.getByPhone(phoneNumber).isPresent()) {
+                    this.currentPerson = this.personService.getByPhone(phoneNumber).get();
+                } else {
+
+                    PersonEntity newPer = new PersonEntity();
+                    newPer.setPhone(phoneNumber);
+                    newPer.setSessionId(VaadinSession.getCurrent().getSession().getId());
+                    newPer.setRegisteredAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
+                    newPer.setLatitude(this.geoLocation.getValue().getLatitude());
+                    newPer.setLongitude(this.geoLocation.getValue().getLongitude());
+                    newPer.setImageUrl("https://i.ibb.co/0nZ3Z3T/unknown.png");
+                    newPer.setFirstName("İsim");
+                    newPer.setLastName("Soyisim");
+                }
+
+                this.requirementService.update(newReq);
+            }
+
+            Notification.show("İhtiyaçlarınız başarıyla kaydedildi.", 3000, Notification.Position.MIDDLE);
 
             dialog.close();
         });
