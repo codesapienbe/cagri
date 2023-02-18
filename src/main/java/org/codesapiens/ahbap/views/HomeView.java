@@ -22,10 +22,12 @@ import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.codesapiens.ahbap.data.service.StyleUtils.*;
 
@@ -115,7 +117,7 @@ public class HomeView extends VerticalLayout {
         styleIcon(callHelpOnTwitterIcon);
         final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
                 "window.open($0, '_blank')",
-                "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://ahbap.org"
+                "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz?&url=https://cagriapp.com"
         )));
         styleDialogButton(callHelpOnTwitterButton.getElement());
 
@@ -167,88 +169,71 @@ public class HomeView extends VerticalLayout {
         setSizeFull();
     }
 
+    private String getRequirementsFromItemBoxes() {
+        return Stream.of(
+                        this.shelter,
+                        this.nutrition,
+                        this.clothes,
+                        this.disabled,
+                        this.pet,
+                        this.hygiene,
+                        this.other
+                ).map(MultiSelectComboBox::getSelectedItems)
+                .flatMap(Collection::stream)
+                .map(ItemEntity::getTitle)
+                .collect(Collectors.joining(" #"));
+    }
+
     private void seedItems() {
 
-        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
+        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 1000)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
         List<ItemEntity> shelterGroup = itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList());
         this.shelter.setItems(shelterGroup);
-        StyleUtils.styleMultiSelectComboBox(this.shelter, "Barınma");
+        styleMultiSelectComboBox(this.shelter, "Barınma");
 
         List<ItemEntity> nutritionGroup = itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList());
         this.nutrition.setItems(nutritionGroup);
-        StyleUtils.styleMultiSelectComboBox(this.nutrition, "Gıda");
+        styleMultiSelectComboBox(this.nutrition, "Gıda");
 
         List<ItemEntity> clothGroup = itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList());
         this.clothes.setItems(clothGroup);
-        StyleUtils.styleMultiSelectComboBox(this.clothes, "Kıyafet");
+        styleMultiSelectComboBox(this.clothes, "Kıyafet");
 
         List<ItemEntity> babyGroup = itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList());
         this.baby.setItems(babyGroup);
-        StyleUtils.styleMultiSelectComboBox(this.baby, "Bebek");
+        styleMultiSelectComboBox(this.baby, "Bebek");
 
         List<ItemEntity> disabledGroup = itemsGroupedByCategory.getOrDefault("Engelli", Collections.emptyList());
         this.disabled.setItems(disabledGroup);
-        StyleUtils.styleMultiSelectComboBox(this.disabled, "Engelli");
+        styleMultiSelectComboBox(this.disabled, "Engelli");
 
         List<ItemEntity> elderlyGroup = itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList());
         this.elderly.setItems(elderlyGroup);
-        StyleUtils.styleMultiSelectComboBox(this.elderly, "Yaşlı");
+        styleMultiSelectComboBox(this.elderly, "Yaşlı");
 
         List<ItemEntity> petGroup = itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList());
         this.pet.setItems(petGroup);
-        StyleUtils.styleMultiSelectComboBox(this.pet, "Evcil Hayvan");
+        styleMultiSelectComboBox(this.pet, "Evcil Hayvan");
 
         List<ItemEntity> hygieneGroup = itemsGroupedByCategory.getOrDefault("Hijyen", Collections.emptyList());
         this.hygiene.setItems(hygieneGroup);
-        StyleUtils.styleMultiSelectComboBox(this.hygiene, "Hijyen");
+        styleMultiSelectComboBox(this.hygiene, "Hijyen");
 
         List<ItemEntity> medicalGroup = itemsGroupedByCategory.getOrDefault("Medikal", Collections.emptyList());
         this.medicine.setItems(medicalGroup);
-        StyleUtils.styleMultiSelectComboBox(this.medicine, "Medikal");
+        styleMultiSelectComboBox(this.medicine, "Medikal");
 
         List<ItemEntity> otherGroup = itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList());
         this.other.setItems(otherGroup);
-        StyleUtils.styleMultiSelectComboBox(this.other, "Diğer");
-    }
-
-    private void styleItemBox() {
-        this.shelter.setLabel("Barınma");
-        this.shelter.setPlaceholder("Barınma");
-        this.shelter.setItemLabelGenerator(ItemEntity::getTitle);
-        this.shelter.setClearButtonVisible(true);
-        this.shelter.setAllowCustomValue(true);
-        this.shelter.setRequired(false);
-        this.shelter.setRequiredIndicatorVisible(false);
-        this.shelter.setMinWidth("100%");
-        this.shelter.setWidth("100%");
-    }
-
-    private String getRequirementsFromItemBoxes() {
-        final var shelterText = this.shelter.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var nutritionText = this.nutrition.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var clothesText = this.clothes.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var babyText = this.baby.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var disabledText = this.disabled.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var elderlyText = this.elderly.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var petText = this.pet.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var hygieneText = this.hygiene.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var medicineText = this.medicine.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        final var otherText = this.other.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
-        return shelterText + nutritionText + " " + clothesText + " " + babyText + " " + disabledText + " " + elderlyText + " " + petText + " " + hygieneText + " " + medicineText + " " + otherText;
+        styleMultiSelectComboBox(this.other, "Diğer");
     }
 
     private void onRequirementsClickEvent() {
 
         final var icoClose = VaadinIcon.CLOSE.create();
-        icoClose.setColor("red");
-        icoClose.setSize("20px");
-        icoClose.getStyle()
-                .set("cursor", "pointer")
-                .set("float", "right")
-                .set("margin-top", "10px")
-                .set("margin-right", "10px");
+        styleCloseIcon(icoClose);
 
         final var dialog = new Dialog(icoClose);
         dialog.setModal(true);
@@ -274,7 +259,41 @@ public class HomeView extends VerticalLayout {
                 dialog
         );
 
-        icoClose.addClickListener(iev -> dialog.close());
+        icoClose.addClickListener(iev -> {
+
+            final var selectedShelterItems = this.shelter.getSelectedItems();
+            final var selectedNutritionItems = this.nutrition.getSelectedItems();
+            final var selectedClothesItems = this.clothes.getSelectedItems();
+            final var selectedBabyItems = this.baby.getSelectedItems();
+            final var selectedDisabledItems = this.disabled.getSelectedItems();
+            final var selectedElderlyItems = this.elderly.getSelectedItems();
+            final var selectedPetItems = this.pet.getSelectedItems();
+            final var selectedHygieneItems = this.hygiene.getSelectedItems();
+            final var selectedMedicineItems = this.medicine.getSelectedItems();
+            final var selectedOtherItems = this.other.getSelectedItems();
+
+            final var selectedItems = Stream.of(
+                            selectedShelterItems,
+                            selectedNutritionItems,
+                            selectedClothesItems,
+                            selectedBabyItems,
+                            selectedDisabledItems,
+                            selectedElderlyItems,
+                            selectedPetItems,
+                            selectedHygieneItems,
+                            selectedMedicineItems,
+                            selectedOtherItems
+                    ).flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+
+            this.notification.sendNotification(
+                    "İhtiyaçlarınız başarıyla kaydedildi.\n" +
+                            "Şimdi yardım talebinizi oluşturabilirsiniz.\n" +
+                            "Lütfen yukarıdaki paylaşım butonlarından birini kullanarak yardım talebinizi paylaşın."
+            );
+
+            dialog.close();
+        });
     }
 
     private void onFindMeClick() {

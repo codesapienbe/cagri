@@ -5,6 +5,7 @@ import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
@@ -19,6 +20,16 @@ public class StyleUtils {
         element.getStyle()
                 .set("margin", "0")
                 .set("padding", "0");
+    }
+
+    public static void styleCloseIcon(Icon icoClose) {
+        icoClose.setColor("red");
+        icoClose.setSize("20px");
+        icoClose.getStyle()
+                .set("cursor", "pointer")
+                .set("float", "right")
+                .set("margin-top", "10px")
+                .set("margin-right", "10px");
     }
 
     public static void styleMultiSelectComboBox(MultiSelectComboBox<ItemEntity> itemBox, String category) {
