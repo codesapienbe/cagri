@@ -102,7 +102,7 @@ public class ShareService {
                 + to[1] + "/@" + to[0] + "," + to[1];
 
 
-        String url = "sms:+905312864182?&amp;body=" +
+        return "sms:+905312864182?&amp;body=" +
                 "ACİL%20YARDIM%20ÇAĞRISI!!!" +
                 "%20" +
                 "İhtiyacım%20olanlar:" +
@@ -114,8 +114,6 @@ public class ShareService {
                 "Konumum:" +
                 "%20" +
                 result;
-
-        return url;
     }
 
 

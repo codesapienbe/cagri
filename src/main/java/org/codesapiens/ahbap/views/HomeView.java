@@ -1,8 +1,7 @@
 package org.codesapiens.ahbap.views;
 
-import com.vaadin.flow.component.accordion.Accordion;
-import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -25,9 +24,9 @@ import software.xdev.vaadin.maps.leaflet.flow.data.LCenter;
 import software.xdev.vaadin.maps.leaflet.flow.data.LMarker;
 import software.xdev.vaadin.maps.leaflet.flow.data.LTileLayer;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,6 +45,26 @@ public class HomeView extends VerticalLayout {
     private final RequirementService requirementService;
     private final ShareService shareService;
     private final NotificationService notification;
+
+    /**
+     * ItemCheckBoxes are used to create a list of requirements
+     */
+
+    private final MultiSelectComboBox<ItemEntity> shelter = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> medicine = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> nutrition = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> clothes = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> baby = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> elderly = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> disabled = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> pet = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> hygiene = new MultiSelectComboBox<>();
+    private final MultiSelectComboBox<ItemEntity> other = new MultiSelectComboBox<>();
+
+    private final HorizontalLayout footerButtonsLayout = new HorizontalLayout();
+
+    private final HorizontalLayout headerLayout = new HorizontalLayout();
+
 
     private PersonEntity currentPerson;
 
@@ -73,7 +92,6 @@ public class HomeView extends VerticalLayout {
         geoLocation.setMaxAge(200000);
         add(geoLocation);
 
-        final var footerButtonsLayout = new HorizontalLayout();
         footerLayout(footerButtonsLayout.getElement());
 
         final var btnFindMe = new Button("Ben neredeyim?");
@@ -93,19 +111,14 @@ public class HomeView extends VerticalLayout {
         btnRequirements.addClickListener(onClick -> onCallHelpClick(this.geoLocation));
         footerButtonsLayout.add(btnFindMe, phoneField, btnRequirements);
 
-        final var headerLayout = new HorizontalLayout();
         headerLayout(headerLayout.getElement());
 
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
         styleIcon(callHelpOnTwitterIcon);
-        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon,
-                onClick -> callHelpOnTwitterEvent(
-                        this.getChildren()
-                                .filter(component -> component instanceof MultiSelectListBox)
-                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                                .collect(Collectors.toList())
-                )
-        );
+        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
+                "window.open($0, '_blank')",
+                "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://ahbap.org"
+        )));
         styleDialogButton(callHelpOnTwitterButton.getElement());
 
         final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
@@ -157,6 +170,20 @@ public class HomeView extends VerticalLayout {
         setSizeFull();
     }
 
+    private String getRequirementsFromItemBoxes() {
+        final var shelterText = this.shelter.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var nutritionText = this.nutrition.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var clothesText = this.clothes.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var babyText = this.baby.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var disabledText = this.disabled.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var elderlyText = this.elderly.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var petText = this.pet.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var hygieneText = this.hygiene.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var medicineText = this.medicine.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        final var otherText = this.other.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
+        return shelterText + nutritionText + " " + clothesText + " " + babyText + " " + disabledText + " " + elderlyText + " " + petText + " " + hygieneText + " " + medicineText + " " + otherText;
+    }
+
     private void onCallHelpClick(GeoLocation geoLocation) {
         final var icoClose = VaadinIcon.CLOSE.create();
 
@@ -170,31 +197,33 @@ public class HomeView extends VerticalLayout {
         final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
-        final var accordion = new Accordion();
-        // add glass effect to accordion
-        styleAccordion(accordion);
+        this.shelter.setValue(itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList()));
+        this.nutrition.setValue(itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList()));
+        this.clothes.setValue(itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList()));
+        this.baby.setValue(itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList()));
+        this.disabled.setValue(itemsGroupedByCategory.getOrDefault("Engelli", Collections.emptyList()));
+        this.elderly.setValue(itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList()));
+        this.pet.setValue(itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList()));
+        this.hygiene.setValue(itemsGroupedByCategory.getOrDefault("Hijyen", Collections.emptyList()));
+        this.medicine.setValue(itemsGroupedByCategory.getOrDefault("Medikal", Collections.emptyList()));
+        this.other.setValue(itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList()));
 
-        itemsGroupedByCategory.forEach((category, items) -> {
+        dialog.add(
+                this.shelter,
+                this.nutrition,
+                this.clothes,
+                this.baby,
+                this.disabled,
+                this.elderly,
+                this.pet,
+                this.hygiene,
+                this.medicine,
+                this.other
+        );
 
-            final var accordionPanel = new AccordionPanel(category);
-            accordionPanel.setWidthFull();
-
-            final var lBox = new MultiSelectListBox<ItemEntity>();
-            lBox.setItems(items);
-            lBox.setItemLabelGenerator(ItemEntity::getTitle);
-            lBox.setSizeFull();
-
-            // change color for each accordion panel
-            styleAccordionItem(accordionPanel, category);
-
-            accordionPanel.setSummaryText(category + " (" + items.size() + " adet ihtiyaç" + ")");
-            accordionPanel.addContent(lBox);
-
-            accordion.add(accordionPanel);
-
-        });
-
-        dialog.add(accordion);
+        add(
+                dialog
+        );
 
         icoClose.addClickListener(iev -> dialog.close());
     }
@@ -216,17 +245,6 @@ public class HomeView extends VerticalLayout {
                 itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
         );
 
-    }
-
-    private PersonEntity findOrCreatePerson(@NotNull TextField phoneField, @NotNull GeoLocation geoLocation) {
-        return mapToPerson(
-                "",
-                "",
-                phoneField.getValue(),
-                geoLocation.getValue().getLatitude(),
-                geoLocation.getValue().getLongitude(),
-                VaadinSession.getCurrent().getSession().getId()
-        );
     }
 
     private void shareOnSMS(List<ItemEntity> requiredItems) {
@@ -354,19 +372,6 @@ public class HomeView extends VerticalLayout {
         getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
     }
 
-    private PersonEntity mapToPerson(String firstName, String lastName, String phone,
-                                     Double latitude, Double longitude, String sessionId) {
-        PersonEntity personEntity = new PersonEntity();
-        // Capitalize first letters of the name and surname
-        personEntity.setFirstName(firstName.substring(0, 1).toUpperCase() + firstName.substring(1));
-        personEntity.setLastName(lastName.substring(0, 1).toUpperCase() + lastName.substring(1));
-        personEntity.setPhone(phone.trim());
-        personEntity.setLatitude(geoLocation.getValue().getLatitude());
-        personEntity.setLongitude(geoLocation.getValue().getLongitude());
-        personEntity.setSessionId(sessionId);
-        return personEntity;
-    }
-
     private RequirementEntity mapToRequirement(PersonEntity foundPerson, ItemEntity item, String sessionId) {
         RequirementEntity requirement = new RequirementEntity();
         requirement.setPerson(foundPerson);
@@ -386,48 +391,52 @@ public class HomeView extends VerticalLayout {
 
         int clickCount = findMeClickCount.incrementAndGet();
 
-        if (clickCount > 1) {
-            return;
-        }
-
         final var map = new LMap(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 5);
         map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
         map.setSizeFull();
-        // TODO: add some logic here for called Markers (token)
-        map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
-        map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-        map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
 
-        final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
-        final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
+        if (clickCount == 1) {
 
-        map.addMarkerClickListener(event -> {
-            final var dialog = new Dialog();
+            // TODO: add some logic here for called Markers (token)
+            map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
+            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
 
-            // Add a close button to the dialog
-            final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> dialog.close());
+            final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+            final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
 
-            // Add the user profile layout to the dialog
-            final var profileLayout = new ProfileLayout(
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                    "John Doe",
-                    "+90 555 555 55 55",
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now())
-            );
+            map.addMarkerClickListener(event -> {
+                final var dialog = new Dialog();
 
-            // Add the button to the dialog
-            dialog.add(closeButton);
-            dialog.add(profileLayout);
+                // Add a close button to the dialog
+                final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> dialog.close());
 
-            dialog.open();
+                // Add the user profile layout to the dialog
+                final var profileLayout = new ProfileLayout(
+                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                        "John Doe",
+                        "+90 555 555 55 55",
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now())
+                );
 
-            add(dialog);
+                // Add the button to the dialog
+                dialog.add(closeButton);
+                dialog.add(profileLayout);
 
-        });
+                dialog.open();
 
-        map.addLComponents(markerMyCoordinates);
+                add(dialog);
 
-        add(map);
+            });
+
+            map.addLComponents(markerMyCoordinates);
+
+            add(map);
+
+        } else {
+            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+        }
 
     }
 
