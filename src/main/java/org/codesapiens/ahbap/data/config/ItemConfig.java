@@ -96,6 +96,8 @@ public class ItemConfig implements CommandLineRunner {
         final var elderly04 = new ItemEntity("Küvet", "Yaşlı");
         final var elderly05 = new ItemEntity("Tuvalet", "Yaşlı");
 
+        saveItemsToDB(elderly01, elderly02, elderly03, elderly04, elderly05);
+
         // Medical supplies
         final var med01 = new ItemEntity("Antibiyotik", "Medikal");
         final var med02 = new ItemEntity("Ağrı kesici", "Medikal");

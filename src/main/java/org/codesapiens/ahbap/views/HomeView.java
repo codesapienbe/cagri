@@ -59,10 +59,6 @@ public class HomeView extends VerticalLayout {
     private final MultiSelectComboBox<ItemEntity> hygiene = new MultiSelectComboBox<>();
     private final MultiSelectComboBox<ItemEntity> other = new MultiSelectComboBox<>();
 
-    private final HorizontalLayout footerButtonsLayout = new HorizontalLayout();
-
-    private final HorizontalLayout headerLayout = new HorizontalLayout();
-
 
     private PersonEntity currentPerson;
 
@@ -87,12 +83,13 @@ public class HomeView extends VerticalLayout {
         geoLocation.setMaxAge(200000);
         add(geoLocation);
 
-        if(VaadinSession.getCurrent().getAttribute("person") != null) {
+        if (VaadinSession.getCurrent().getAttribute("person") != null) {
             this.currentPerson = (PersonEntity) VaadinSession.getCurrent().getAttribute("person");
         } else {
             this.currentPerson = new PersonEntity();
         }
 
+        final var footerButtonsLayout = new HorizontalLayout();
         footerLayout(footerButtonsLayout.getElement());
 
         final var btnFindMe = new Button("Ben neredeyim?");
@@ -115,6 +112,7 @@ public class HomeView extends VerticalLayout {
         btnRequirements.addClickListener(onClick -> onRequirementsClickEvent());
         footerButtonsLayout.add(btnFindMe, phoneField, btnRequirements);
 
+        final var headerLayout = new HorizontalLayout();
         headerLayout(headerLayout.getElement());
 
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
@@ -293,6 +291,10 @@ public class HomeView extends VerticalLayout {
             for (ItemEntity item : selectedItems) {
                 RequirementEntity newReq = new RequirementEntity();
                 newReq.setItem(item);
+                newReq.setQuantity(1.00);
+                newReq.setPriority(1);
+                newReq.setSessionId(VaadinSession.getCurrent().getSession().getId());
+                newReq.setDescription("Açıklama");
 
                 String phoneNumber = this.currentPerson.getPhone();
                 if (this.personService.getByPhone(phoneNumber).isPresent()) {
@@ -308,7 +310,11 @@ public class HomeView extends VerticalLayout {
                     newPer.setImageUrl("https://i.ibb.co/0nZ3Z3T/unknown.png");
                     newPer.setFirstName("İsim");
                     newPer.setLastName("Soyisim");
+
+                    this.currentPerson = this.personService.update(newPer);
                 }
+
+                newReq.setPerson(this.currentPerson);
 
                 this.requirementService.update(newReq);
             }
