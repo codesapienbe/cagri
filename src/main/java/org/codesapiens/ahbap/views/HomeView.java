@@ -108,7 +108,10 @@ public class HomeView extends VerticalLayout {
         // background Turquoise
         footerButton(btnRequirements, "right", "#00bcd4");
 
-        btnRequirements.addClickListener(onClick -> onCallHelpClick(this.geoLocation));
+        // Loads the items from the database
+        seedItems();
+
+        btnRequirements.addClickListener(onClick -> onRequirementsClickEvent());
         footerButtonsLayout.add(btnFindMe, phoneField, btnRequirements);
 
         headerLayout(headerLayout.getElement());
@@ -124,35 +127,34 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
         styleIcon(callHelpOnFacebookIcon);
         final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
-                onClick -> callHelpOnFacebookEvent(
-                        this.getChildren()
-                                .filter(component -> component instanceof MultiSelectListBox)
-                                .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                                .collect(Collectors.toList())
-                )
+                e -> {
+                    getUI().ifPresent(ui -> ui.getPage().executeJs(
+                            "window.open($0, '_blank')",
+                            "https://www.facebook.com/sharer/sharer.php?u=https://cagriapp.com&quote=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz?"
+                    ));
+                }
         );
         styleDialogButton(callHelpOnFacebookButton.getElement());
-        // TODO: fix it later it does not work
         callHelpOnFacebookButton.setEnabled(false);
 
         final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
         styleIcon(callHelpOnWhatsAppIcon);
-        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon, onClick -> callHelpOnWhatsAppEvent(
-                this.getChildren()
-                        .filter(component -> component instanceof MultiSelectListBox)
-                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                        .collect(Collectors.toList())
-        ));
+        final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon,
+                e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
+                        "window.open($0, '_blank')",
+                        "https://wa.me/?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
+                ))
+        );
         styleDialogButton((callHelpOnWhatsAppButton.getElement()));
 
         final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
         styleIcon(callHelpOnSmsIcon);
-        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon, onClick -> callHelpOnSmsEvent(
-                this.getChildren()
-                        .filter(component -> component instanceof MultiSelectListBox)
-                        .map(component -> (MultiSelectListBox<ItemEntity>) component)
-                        .collect(Collectors.toList())
-        ));
+        final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon,
+                e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
+                        "window.open($0, '_blank')",
+                        "sms:?body=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
+                ))
+        );
         styleDialogButton(callHelpOnSmsButton.getElement());
 
         headerLayout.add(
@@ -170,6 +172,41 @@ public class HomeView extends VerticalLayout {
         setSizeFull();
     }
 
+    private void seedItems() {
+        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
+                .collect(Collectors.groupingBy(ItemEntity::getCategory));
+
+        List<ItemEntity> shelterGroup = itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList());
+        this.shelter.setItems(shelterGroup);
+
+        List<ItemEntity> nutritionGroup = itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList());
+        this.nutrition.setItems(nutritionGroup);
+
+        List<ItemEntity> clothGroup = itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList());
+        this.clothes.setItems(clothGroup);
+
+        List<ItemEntity> babyGroup = itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList());
+        this.baby.setItems(babyGroup);
+
+        List<ItemEntity> disabledGroup = itemsGroupedByCategory.getOrDefault("Engelli", Collections.emptyList());
+        this.disabled.setItems(disabledGroup);
+
+        List<ItemEntity> elderlyGroup = itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList());
+        this.elderly.setItems(elderlyGroup);
+
+        List<ItemEntity> petGroup = itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList());
+        this.pet.setItems(petGroup);
+
+        List<ItemEntity> hygieneGroup = itemsGroupedByCategory.getOrDefault("Hijyen", Collections.emptyList());
+        this.hygiene.setItems(hygieneGroup);
+
+        List<ItemEntity> medicalGroup = itemsGroupedByCategory.getOrDefault("Medikal", Collections.emptyList());
+        this.medicine.setItems(medicalGroup);
+
+        List<ItemEntity> otherGroup = itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList());
+        this.other.setItems(otherGroup);
+    }
+
     private String getRequirementsFromItemBoxes() {
         final var shelterText = this.shelter.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
         final var nutritionText = this.nutrition.getValue().stream().map(ItemEntity::getTitle).collect(Collectors.joining(" #"));
@@ -184,29 +221,21 @@ public class HomeView extends VerticalLayout {
         return shelterText + nutritionText + " " + clothesText + " " + babyText + " " + disabledText + " " + elderlyText + " " + petText + " " + hygieneText + " " + medicineText + " " + otherText;
     }
 
-    private void onCallHelpClick(GeoLocation geoLocation) {
+    private void onRequirementsClickEvent() {
+
         final var icoClose = VaadinIcon.CLOSE.create();
+        icoClose.setColor("red");
+        icoClose.setSize("20px");
+        icoClose.getStyle()
+                .set("cursor", "pointer")
+                .set("float", "right")
+                .set("margin-top", "10px")
+                .set("margin-right", "10px");
 
         final var dialog = new Dialog(icoClose);
         dialog.setModal(true);
         dialog.setCloseOnEsc(false);
         dialog.setDraggable(true);
-
-        dialog.open();
-
-        final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
-                .collect(Collectors.groupingBy(ItemEntity::getCategory));
-
-        this.shelter.setValue(itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList()));
-        this.nutrition.setValue(itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList()));
-        this.clothes.setValue(itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList()));
-        this.baby.setValue(itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList()));
-        this.disabled.setValue(itemsGroupedByCategory.getOrDefault("Engelli", Collections.emptyList()));
-        this.elderly.setValue(itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList()));
-        this.pet.setValue(itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList()));
-        this.hygiene.setValue(itemsGroupedByCategory.getOrDefault("Hijyen", Collections.emptyList()));
-        this.medicine.setValue(itemsGroupedByCategory.getOrDefault("Medikal", Collections.emptyList()));
-        this.other.setValue(itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList()));
 
         dialog.add(
                 this.shelter,
@@ -220,6 +249,8 @@ public class HomeView extends VerticalLayout {
                 this.medicine,
                 this.other
         );
+
+        dialog.open();
 
         add(
                 dialog
