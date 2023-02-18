@@ -5,17 +5,13 @@ import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.listbox.MultiSelectListBox;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
 import org.codesapiens.ahbap.data.entity.PersonEntity;
-import org.codesapiens.ahbap.data.entity.RequirementEntity;
-import org.codesapiens.ahbap.data.entity.TagEntity;
 import org.codesapiens.ahbap.data.service.*;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
@@ -28,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -173,38 +168,61 @@ public class HomeView extends VerticalLayout {
     }
 
     private void seedItems() {
+
         final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 100)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
         List<ItemEntity> shelterGroup = itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList());
         this.shelter.setItems(shelterGroup);
+        StyleUtils.styleMultiSelectComboBox(this.shelter, "Barınma");
 
         List<ItemEntity> nutritionGroup = itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList());
         this.nutrition.setItems(nutritionGroup);
+        StyleUtils.styleMultiSelectComboBox(this.nutrition, "Gıda");
 
         List<ItemEntity> clothGroup = itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList());
         this.clothes.setItems(clothGroup);
+        StyleUtils.styleMultiSelectComboBox(this.clothes, "Kıyafet");
 
         List<ItemEntity> babyGroup = itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList());
         this.baby.setItems(babyGroup);
+        StyleUtils.styleMultiSelectComboBox(this.baby, "Bebek");
 
         List<ItemEntity> disabledGroup = itemsGroupedByCategory.getOrDefault("Engelli", Collections.emptyList());
         this.disabled.setItems(disabledGroup);
+        StyleUtils.styleMultiSelectComboBox(this.disabled, "Engelli");
 
         List<ItemEntity> elderlyGroup = itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList());
         this.elderly.setItems(elderlyGroup);
+        StyleUtils.styleMultiSelectComboBox(this.elderly, "Yaşlı");
 
         List<ItemEntity> petGroup = itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList());
         this.pet.setItems(petGroup);
+        StyleUtils.styleMultiSelectComboBox(this.pet, "Evcil Hayvan");
 
         List<ItemEntity> hygieneGroup = itemsGroupedByCategory.getOrDefault("Hijyen", Collections.emptyList());
         this.hygiene.setItems(hygieneGroup);
+        StyleUtils.styleMultiSelectComboBox(this.hygiene, "Hijyen");
 
         List<ItemEntity> medicalGroup = itemsGroupedByCategory.getOrDefault("Medikal", Collections.emptyList());
         this.medicine.setItems(medicalGroup);
+        StyleUtils.styleMultiSelectComboBox(this.medicine, "Medikal");
 
         List<ItemEntity> otherGroup = itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList());
         this.other.setItems(otherGroup);
+        StyleUtils.styleMultiSelectComboBox(this.other, "Diğer");
+    }
+
+    private void styleItemBox() {
+        this.shelter.setLabel("Barınma");
+        this.shelter.setPlaceholder("Barınma");
+        this.shelter.setItemLabelGenerator(ItemEntity::getTitle);
+        this.shelter.setClearButtonVisible(true);
+        this.shelter.setAllowCustomValue(true);
+        this.shelter.setRequired(false);
+        this.shelter.setRequiredIndicatorVisible(false);
+        this.shelter.setMinWidth("100%");
+        this.shelter.setWidth("100%");
     }
 
     private String getRequirementsFromItemBoxes() {
@@ -257,165 +275,6 @@ public class HomeView extends VerticalLayout {
         );
 
         icoClose.addClickListener(iev -> dialog.close());
-    }
-
-    private void callHelpOnSmsEvent(
-            List<MultiSelectListBox<ItemEntity>> itemsCheck
-    ) {
-
-        for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-            for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                RequirementEntity requirementToSave = mapToRequirement(currentPerson, item, VaadinSession.getCurrent().getSession().getId());
-                requirementService.update(requirementToSave);
-            }
-        }
-
-        notification.sendNotification("SMS çağrınız gönderildi.");
-
-        shareOnSMS(
-                itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-        );
-
-    }
-
-    private void shareOnSMS(List<ItemEntity> requiredItems) {
-        final var sms = shareService.getShareUrl(currentPerson, requiredItems);
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", sms));
-    }
-
-    private void callHelpOnWhatsAppEvent(
-            List<MultiSelectListBox<ItemEntity>> itemsCheck
-    ) {
-        Optional<PersonEntity> foundPerson = personService.getByPhone(this.currentPerson.getPhone().trim());
-
-        if (foundPerson.isPresent()) {
-            notification.sendNotification("Daha önce çağrınız mevcut.");
-        } else {
-
-            for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-                for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                    RequirementEntity requirementToSave = mapToRequirement(
-                            currentPerson,
-                            item,
-                            VaadinSession.getCurrent().getSession().getId()
-                    );
-                    requirementService.update(requirementToSave);
-                }
-            }
-
-            notification.sendNotification("Whatsapp çağrınız alındı.");
-
-            shareOnWhatsApp(
-                    itemsCheck.stream().flatMap(cg -> cg.getSelectedItems().stream()).collect(Collectors.toList())
-            );
-        }
-
-    }
-
-    private void callHelpOnFacebookEvent(
-            List<MultiSelectListBox<ItemEntity>> itemsCheck
-    ) {
-
-        for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-            for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                RequirementEntity requirementToSave = mapToRequirement(
-                        currentPerson,
-                        item,
-                        VaadinSession.getCurrent().getSession().getId()
-                );
-                requirementService.update(requirementToSave);
-            }
-        }
-
-        notification.sendNotification("Facebook çağrınız paylaşıldı.");
-
-        shareOnFacebook(
-                itemsCheck
-                        .stream()
-                        .flatMap(cg -> cg.getSelectedItems().stream())
-                        .collect(Collectors.toList())
-        );
-    }
-
-    private void shareOnFacebook(List<ItemEntity> requiredItems) {
-        // set content of the post for Facebook
-        Double[] from = {
-                currentPerson.getLatitude(),
-                currentPerson.getLongitude()
-        };
-
-        Double[] to = {
-                currentPerson.getLatitude(),
-                currentPerson.getLongitude()
-        };
-
-        final var directionsUrl = "https://www.google.com/maps/dir" + "/" + from[0] + "," + from[1] + "/" + to[0] + ","
-                + to[1] + "/@" + to[0] + "," + to[1];
-
-        String absoluteUrl = "https://www.facebook.com/sharer.php?body=" +
-                "ACİL%20YARDIM%20ÇAĞRISI!!!" +
-                "%20" +
-                "İhtiyacım%20olanlar:" +
-                "%20" +
-                requiredItems.stream()
-                        .map(it -> it.getTitle().replace(" ", "%20"))
-                        .collect(Collectors.joining("+")) +
-                "%20" +
-                "Konumum:" +
-                "%20" +
-                directionsUrl;
-
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", absoluteUrl));
-    }
-
-    private void callHelpOnTwitterEvent(
-            List<MultiSelectListBox<ItemEntity>> itemsCheck
-    ) {
-        Optional<PersonEntity> foundPerson = personService.getByPhone(this.currentPerson.getPhone().trim());
-
-        for (MultiSelectListBox<ItemEntity> itemEntityCheckboxGroup : itemsCheck) {
-            for (ItemEntity item : itemEntityCheckboxGroup.getSelectedItems()) {
-                RequirementEntity requirementToSave = mapToRequirement(this.currentPerson, item, VaadinSession.getCurrent().getSession().getId());
-                requirementService.update(requirementToSave);
-            }
-        }
-
-        notification.sendNotification("Çağrınız alındı. Lütfen çağrı kanalı seçiniz.");
-
-        shareOnTwitter(
-                itemsCheck
-                        .stream()
-                        .flatMap(cg -> cg.getSelectedItems().stream())
-                        .collect(Collectors.toList())
-        );
-
-    }
-
-    private void shareOnTwitter(List<ItemEntity> requiredItems) {
-        List<TagEntity> annotations = tagService.listBySymbol('@');
-        List<TagEntity> hashtags = tagService.listBySymbol('#');
-        final var url = this.shareService.shareOnTwitter(currentPerson, requiredItems, annotations, hashtags);
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
-    }
-
-    private void shareOnWhatsApp(List<ItemEntity> requiredItems) {
-        final var url = this.shareService.shareOnWhatsApp(currentPerson, requiredItems);
-        getUI().ifPresent(ui -> ui.getPage().executeJs("window.open($0, '_blank')", url));
-    }
-
-    private RequirementEntity mapToRequirement(PersonEntity foundPerson, ItemEntity item, String sessionId) {
-        RequirementEntity requirement = new RequirementEntity();
-        requirement.setPerson(foundPerson);
-        requirement.setItem(item);
-        if (item.getCategory().contains("Medikal")) {
-            requirement.setPriority(10);
-        } else {
-            requirement.setPriority(1);
-        }
-        requirement.setQuantity(1.00);
-        requirement.setSessionId(sessionId);
-
-        return requirement;
     }
 
     private void onFindMeClick() {

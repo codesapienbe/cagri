@@ -3,9 +3,11 @@ package org.codesapiens.ahbap.data.service;
 import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
+import org.codesapiens.ahbap.data.entity.ItemEntity;
 
 public class StyleUtils {
 
@@ -17,6 +19,18 @@ public class StyleUtils {
         element.getStyle()
                 .set("margin", "0")
                 .set("padding", "0");
+    }
+
+    public static void styleMultiSelectComboBox(MultiSelectComboBox<ItemEntity> itemBox, String category) {
+        itemBox.setLabel(category);
+        itemBox.setPlaceholder(category + " seçiniz");
+        itemBox.setItemLabelGenerator(ItemEntity::getTitle);
+        itemBox.setClearButtonVisible(true);
+        itemBox.setAllowCustomValue(true);
+        itemBox.setRequired(false);
+        itemBox.setRequiredIndicatorVisible(false);
+        itemBox.setMinWidth("100%");
+        itemBox.setWidth("100%");
     }
 
     public static void footerButton(Button button, String position, String background) {
@@ -111,27 +125,25 @@ public class StyleUtils {
                 category.equals("Medikal") || category.equals("Sağlık") || category.equals("Sağlık Hizmetleri")) {
             selectedColor = medicalColor;
         } else if (category.equals("Food") || category.equals("Yiyecek") || category.equals("Yiyecek Yardımı")
-        || category.equals("Gıda") || category.equals("Gıda Yardımı") || category.equals("Yiyecek İçecek")) {
+                || category.equals("Gıda") || category.equals("Gıda Yardımı") || category.equals("Yiyecek İçecek")) {
             selectedColor = foodColor;
         } else if (category.equals("Clothing") || category.equals("Giyim") || category.equals("Giyim Yardımı")
-        || category.equals("Kıyafet") || category.equals("Kıyafet Yardımı") || category.equals("Kıyafet Giyim")) {
+                || category.equals("Kıyafet") || category.equals("Kıyafet Yardımı") || category.equals("Kıyafet Giyim")) {
             selectedColor = clothingColor;
         } else if (category.equals("Shelter") || category.equals("Konaklama") || category.equals("Konaklama Yardımı")
-        || category.equals("Barınma") || category.equals("Barınma Yardımı") || category.equals("Barınma Konaklama") ||
+                || category.equals("Barınma") || category.equals("Barınma Yardımı") || category.equals("Barınma Konaklama") ||
                 category.equals("Ev") || category.equals("Ev Yardımı") || category.equals("Ev Konaklama")) {
             selectedColor = shelterColor;
         } else if (category.equals("Transportation") || category.equals("Ulaşım") || category.equals("Ulaşım Yardımı")
-        || category.equals("Taşıma") || category.equals("Taşıma Yardımı") || category.equals("Taşıma Ulaşım")) {
+                || category.equals("Taşıma") || category.equals("Taşıma Yardımı") || category.equals("Taşıma Ulaşım")) {
             selectedColor = transportationColor;
         } else if (category.equals("Education") || category.equals("Eğitim") || category.equals("Eğitim Yardımı")) {
             selectedColor = educationColor;
         } else if (category.equals("Baby") || category.equals("Bebek") || category.equals("Bebek Yardımı")) {
             selectedColor = "#e91e63";
-        }
-        else if (category.equals("Hygene") || category.equals("Hijyen") || category.equals("Hijyen Yardımı")) {
+        } else if (category.equals("Hygene") || category.equals("Hijyen") || category.equals("Hijyen Yardımı")) {
             selectedColor = "#ffeb3b";
-        }
-        else if (category.equals("Other") || category.equals("Diğer") || category.equals("Diğer Yardım")) {
+        } else if (category.equals("Other") || category.equals("Diğer") || category.equals("Diğer Yardım")) {
             selectedColor = "#9e9e9e";
         }
 
