@@ -1,8 +1,5 @@
 package org.codesapiens.ahbap.data.entity;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -14,8 +11,6 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "messages")
-// HIBERNATE SEARCH
-@Indexed
 public class MessageEntity extends AbstractEntity {
 
     @NotNull
@@ -23,10 +18,8 @@ public class MessageEntity extends AbstractEntity {
     private PersonEntity sender;
 
     @NotNull
-    @FullTextField
     private String channel;
     @Lob
-    @FullTextField
     private String text;
 
     private LocalDate date;

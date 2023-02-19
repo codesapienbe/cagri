@@ -1,8 +1,5 @@
 package org.codesapiens.ahbap.data.entity;
 
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -11,16 +8,12 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "items")
-// HIBERNATE SEARCH
-@Indexed
 public class ItemEntity extends AbstractEntity {
 
     @NotEmpty
     @Column(nullable = false, unique = true)
-    @FullTextField
     private String title;
 
-    @FullTextField
     private String description;
 
     public ItemEntity() {

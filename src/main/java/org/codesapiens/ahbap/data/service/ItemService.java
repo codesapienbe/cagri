@@ -2,6 +2,7 @@ package org.codesapiens.ahbap.data.service;
 
 import org.codesapiens.ahbap.data.entity.ItemEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class ItemService {
         repository.deleteById(id);
     }
 
-    public Page<ItemEntity> list(Pageable pageable) {
+    @Cacheable("items") public Page<ItemEntity> list(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
