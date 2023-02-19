@@ -528,38 +528,43 @@ public class HomeView extends VerticalLayout {
 
     private void getCurrentLocation(LMap map) {
 
-        map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-        map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+        if (findMeClickCount.incrementAndGet() == 1) {
+            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
 
-        final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
-        final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
+            final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+            final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
 
-        map.addMarkerClickListener(event -> {
-            final var dialog = new Dialog();
-            final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> {
-                dialog.close();
+            map.addMarkerClickListener(event -> {
+
+                final var dialog = new Dialog();
+                final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> {
+                    dialog.close();
+                });
+
+                // Add the user profile layout to the dialog
+                final var profileLayout = new ProfileLayout(
+                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                        this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
+                        this.currentPerson.getPhone(),
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
+                        getRequirements()
+                );
+
+                dialog.add(
+                        closeButton,
+                        profileLayout
+                );
+
+                dialog.open();
+                add(dialog);
             });
 
-            // Add the user profile layout to the dialog
-            final var profileLayout = new ProfileLayout(
-                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                    this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
-                    this.currentPerson.getPhone(),
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
-                    getRequirements()
-            );
-
-            dialog.add(
-                    closeButton,
-                    profileLayout
-            );
-
-            dialog.open();
-            add(dialog);
-        });
-
-        map.addLComponents(markerMyCoordinates);
-
+            map.addLComponents(markerMyCoordinates);
+        } else {
+            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+        }
 
     }
 
