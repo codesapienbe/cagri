@@ -3,9 +3,6 @@ version: "3.7"
 services:
   app:
     image: "yilmazchef/konum:latest"
-    build:
-      context: .
-      dockerfile: Dockerfile
     container_name: "konum-app"
     depends_on:
       db:
