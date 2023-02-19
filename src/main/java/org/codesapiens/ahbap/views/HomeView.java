@@ -180,7 +180,7 @@ public class HomeView extends VerticalLayout {
                     final var query = "https://wa.me?text=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
                     final var message = new MessageEntity(
                             this.currentPerson,
-                            "facebook",
+                            "whatsapp",
                             query
                     );
                     this.messageService.update(message);
@@ -200,7 +200,7 @@ public class HomeView extends VerticalLayout {
                     final var query = "sms:?body=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
                     final var message = new MessageEntity(
                             this.currentPerson,
-                            "facebook",
+                            "sms",
                             query
                     );
                     this.messageService.update(message);
