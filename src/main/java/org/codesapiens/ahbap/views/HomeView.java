@@ -413,16 +413,21 @@ public class HomeView extends VerticalLayout {
         );
 
         icoClose.addClickListener(onCloseClickEvent -> {
-            requirementService.updateBySessionIdOrPersonId(
+            boolean updated = requirementService.updateBySessionIdOrPersonId(
                     currentPerson.getId(),
                     VaadinSession.getCurrent().getSession().getId(),
                     getAllSelectedItems()
             );
 
-            Notification.show(
-                    "İhtiyaçlarınız başarıyla kaydedildi. Lütfen yukarıdaki butonlar yardımı ile sosyal medya hesaplarınızdan yardım çağrınızı paylaşınız."
-                    , 5000, Notification.Position.TOP_CENTER
-            );
+            if (updated) {
+                Notification.show(
+                        "İhtiyaçlarınız başarıyla güncellendi."
+                        , 5000, Notification.Position.TOP_CENTER
+                );
+            } else {
+                setRequirements();
+            }
+
             dialog.close();
         });
     }

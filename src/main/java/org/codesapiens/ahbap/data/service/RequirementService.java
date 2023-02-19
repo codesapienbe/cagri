@@ -14,70 +14,84 @@ import java.util.UUID;
 @Service
 public class RequirementService {
 
-    private final RequirementRepository repository;
+    private final RequirementRepository requirementRepository;
+    private final PersonRepository personRepository;
 
     @Autowired
-    public RequirementService(RequirementRepository repository) {
-        this.repository = repository;
+    public RequirementService(RequirementRepository requirementRepository, PersonRepository personRepository) {
+        this.requirementRepository = requirementRepository;
+        this.personRepository = personRepository;
     }
 
     public Optional<RequirementEntity> get(UUID id) {
-        return repository.findById(id);
+        return requirementRepository.findById(id);
     }
 
     public List<RequirementEntity> getByPersonId(UUID personId) {
-        return repository.findAllByPerson_Id(personId);
+        return requirementRepository.findAllByPerson_Id(personId);
     }
 
     public List<RequirementEntity> get(String sessionId) {
-        return repository.findAllBySessionId(sessionId);
+        return requirementRepository.findAllBySessionId(sessionId);
     }
 
     public RequirementEntity update(RequirementEntity entity) {
-        return repository.save(entity);
+        return requirementRepository.save(entity);
     }
 
-    public void updateBySessionIdOrPersonId(UUID personId, String sessionId, List<ItemEntity> items) {
+    public boolean updateBySessionIdOrPersonId(UUID personId, String sessionId, List<ItemEntity> items) {
 
-        var requirements = repository.findAllBySessionIdOrPerson_Id(sessionId, personId);
-        repository.deleteAll(requirements);
+        var requirements = requirementRepository.findAllBySessionIdOrPerson_Id(sessionId, personId);
 
-        var foundPerson = requirements.get(0).getPerson();
-
-        for (ItemEntity item : items) {
-            var requirement = new RequirementEntity();
-            requirement.setPerson(foundPerson);
-            requirement.setSessionId(sessionId);
-            requirement.setItem(item);
-            requirement.setPriority(1);
-            requirement.setQuantity(1.00);
-            requirement.setDescription("");
-            repository.save(requirement);
+        if (!requirements.isEmpty()) {
+            requirementRepository.deleteAll(requirements);
         }
+
+        var foundPerson = personRepository.findById(personId);
+
+        if (foundPerson.isEmpty()) {
+            return false;
+        } else {
+            var person = foundPerson.get();
+
+            for (ItemEntity item : items) {
+                var requirement = new RequirementEntity();
+                requirement.setPerson(person);
+                requirement.setSessionId(sessionId);
+                requirement.setItem(item);
+                requirement.setPriority(1);
+                requirement.setQuantity(1.00);
+                requirement.setDescription("");
+                requirementRepository.save(requirement);
+            }
+
+            return true;
+        }
+
 
     }
 
     public void delete(UUID id) {
-        repository.deleteById(id);
+        requirementRepository.deleteById(id);
     }
 
     public Page<RequirementEntity> list(Pageable pageable) {
-        return repository.findAll(pageable);
+        return requirementRepository.findAll(pageable);
     }
 
     public int count() {
-        return (int) repository.count();
+        return (int) requirementRepository.count();
     }
 
     public long countByItem(String title, String category) {
-        return repository.countByItem_TitleAndItem_Category(
+        return requirementRepository.countByItem_TitleAndItem_Category(
                 title,
                 category
         );
     }
 
     public long countByItem(UUID itemId, String category) {
-        return repository.countByItem_IdAndItem_Category(
+        return requirementRepository.countByItem_IdAndItem_Category(
                 itemId,
                 category
         );
