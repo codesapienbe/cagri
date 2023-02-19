@@ -1,5 +1,6 @@
 package org.codesapiens.ahbap.data.service;
 
+import org.codesapiens.ahbap.data.entity.ItemEntity;
 import org.codesapiens.ahbap.data.entity.RequirementEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,26 @@ public class RequirementService {
 
     public RequirementEntity update(RequirementEntity entity) {
         return repository.save(entity);
+    }
+
+    public void updateBySessionIdOrPersonId(UUID personId, String sessionId, List<ItemEntity> items) {
+
+        var requirements = repository.findAllBySessionIdOrPerson_Id(sessionId, personId);
+        repository.deleteAll(requirements);
+
+        var foundPerson = requirements.get(0).getPerson();
+
+        for (ItemEntity item : items) {
+            var requirement = new RequirementEntity();
+            requirement.setPerson(foundPerson);
+            requirement.setSessionId(sessionId);
+            requirement.setItem(item);
+            requirement.setPriority(1);
+            requirement.setQuantity(1.00);
+            requirement.setDescription("");
+            repository.save(requirement);
+        }
+
     }
 
     public void delete(UUID id) {

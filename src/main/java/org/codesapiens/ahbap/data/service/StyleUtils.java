@@ -4,8 +4,13 @@ import com.vaadin.flow.component.accordion.Accordion;
 import com.vaadin.flow.component.accordion.AccordionPanel;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.dom.Element;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
@@ -213,5 +218,77 @@ public class StyleUtils {
                 .set("padding", "10px")
                 .set("margin", "0")
                 .set("z-index", "1000");
+    }
+
+    public static void styleInitialDialogPhoneField(TextField initialDialogPhoneField) {
+        initialDialogPhoneField.getStyle().set("font-size", "16px");
+        initialDialogPhoneField.getStyle().set("font-weight", "bold");
+        initialDialogPhoneField.getStyle().set("padding", "10px");
+        initialDialogPhoneField.getStyle().set("border-radius", "5px");
+        initialDialogPhoneField.getStyle().set("border", "1px solid #cccccc");
+        initialDialogPhoneField.getStyle().set("width", "100%");
+    }
+
+    public static void styleInitialDialogFooterButton(Button initialDialogFooterButton) {
+        initialDialogFooterButton.getStyle().set("background-color", "#4caf50");
+        initialDialogFooterButton.getStyle().set("color", "#ffffff");
+        initialDialogFooterButton.getStyle().set("border-radius", "5px");
+        initialDialogFooterButton.getStyle().set("font-size", "16px");
+        initialDialogFooterButton.getStyle().set("font-weight", "bold");
+        initialDialogFooterButton.getStyle().set("padding", "10px");
+    }
+
+    public static void styleInitialDialogBodyLabel(Label initialDialogBodyLabel) {
+        initialDialogBodyLabel.getStyle().set("font-size", "16px");
+    }
+
+    public static void styleInitialDialogHeaderLabel(Label initialDialogHeaderLabel) {
+        initialDialogHeaderLabel.getStyle().set("font-size", "20px");
+        initialDialogHeaderLabel.getStyle().set("font-weight", "bold");
+    }
+
+    public static void styleInitialDialogFooter(HorizontalLayout initialDialogFooter) {
+        initialDialogFooter.setAlignItems(FlexComponent.Alignment.CENTER);
+        initialDialogFooter.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        initialDialogFooter.setPadding(true);
+        initialDialogFooter.setSpacing(true);
+        initialDialogFooter.setWidthFull();
+    }
+
+    public static void styleInitialDialogBody(HorizontalLayout initialDialogBody) {
+        initialDialogBody.setAlignItems(FlexComponent.Alignment.CENTER);
+        initialDialogBody.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        initialDialogBody.setPadding(true);
+        initialDialogBody.setSpacing(true);
+        initialDialogBody.setWidthFull();
+        initialDialogBody.setHeightFull();
+    }
+
+    public static void styleInitialDialogHeader(HorizontalLayout initialDialogHeader) {
+        initialDialogHeader.setAlignItems(FlexComponent.Alignment.CENTER);
+        initialDialogHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        initialDialogHeader.setPadding(true);
+        initialDialogHeader.setSpacing(true);
+        initialDialogHeader.setWidthFull();
+        initialDialogHeader.setHeightFull();
+    }
+
+    public static void styleInitialDialogLayout(VerticalLayout initialDialogLayout) {
+        initialDialogLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        initialDialogLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        initialDialogLayout.setPadding(true);
+        initialDialogLayout.setSpacing(true);
+        initialDialogLayout.setWidthFull();
+        initialDialogLayout.setHeightFull();
+    }
+
+    public static void styleInitialDialog(Dialog initialDialog) {
+        initialDialog.setCloseOnEsc(false);
+        initialDialog.setCloseOnOutsideClick(false);
+        initialDialog.setWidth("400px");
+        initialDialog.setHeight("200px");
+        initialDialog.getElement().getStyle().set("background-color", "#f5f5f5");
+        initialDialog.getElement().getStyle().set("border-radius", "10px");
+        initialDialog.getElement().getStyle().set("box-shadow", "0 0 10px 0 rgba(0,0,0,0.5)");
     }
 }

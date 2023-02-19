@@ -14,12 +14,10 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
+import org.codesapiens.ahbap.data.entity.MessageEntity;
 import org.codesapiens.ahbap.data.entity.PersonEntity;
 import org.codesapiens.ahbap.data.entity.RequirementEntity;
-import org.codesapiens.ahbap.data.service.ItemService;
-import org.codesapiens.ahbap.data.service.PersonService;
-import org.codesapiens.ahbap.data.service.RequirementService;
-import org.codesapiens.ahbap.data.service.TagService;
+import org.codesapiens.ahbap.data.service.*;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
 import software.xdev.vaadin.maps.leaflet.flow.LMap;
@@ -43,10 +41,16 @@ import static org.codesapiens.ahbap.data.service.StyleUtils.*;
 @Route("")
 public class HomeView extends VerticalLayout {
 
+    private static final String BASE_URL = "https://cagriapp.com/";
+
     private final PersonService personService;
     private final ItemService itemService;
     private final TagService tagService;
     private final RequirementService requirementService;
+
+    private final ShareService shareService;
+
+    private final MessageService messageService;
 
     /**
      * ItemCheckBoxes are used to create a list of requirements
@@ -74,12 +78,14 @@ public class HomeView extends VerticalLayout {
     private final AtomicInteger findMeClickCount = new AtomicInteger(0);
 
     public HomeView(PersonService personService, ItemService itemService,
-                    TagService tagService, RequirementService requirementService) {
+                    TagService tagService, RequirementService requirementService, ShareService shareService, MessageService messageService) {
 
         this.personService = personService;
         this.itemService = itemService;
         this.tagService = tagService;
         this.requirementService = requirementService;
+        this.shareService = shareService;
+        this.messageService = messageService;
 
         pageBackground(getElement());
 
@@ -129,13 +135,18 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
         styleIcon(callHelpOnTwitterIcon);
         final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> {
+            final var hashtags = "&hashtags=" + getRequirements();
+            final var query = "https://twitter.com/intent/tweet?text=Benim ihtiyaçlarım: " + hashtags + "&url=https://cagriapp.com";
 
-            setRequirements();
-            Notification.show("İhtiyaçlarınız başarıyla kaydedildi.", 3000, Notification.Position.MIDDLE);
+            final var message = new MessageEntity(
+                    this.currentPerson,
+                    "twitter",
+                    query
+            );
+            this.messageService.update(message);
 
             getUI().ifPresent(ui -> ui.getPage().executeJs(
-                    "window.open($0, '_blank')",
-                    "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz?&url=https://cagriapp.com"
+                    "window.open($0, '_blank')", query
             ));
         });
         styleDialogButton(callHelpOnTwitterButton.getElement());
@@ -144,9 +155,17 @@ public class HomeView extends VerticalLayout {
         styleIcon(callHelpOnFacebookIcon);
         final var callHelpOnFacebookButton = new Button(callHelpOnFacebookIcon,
                 e -> {
+                    final var hashtags = "&hashtag" + getRequirements();
+                    final var query = "https://www.facebook.com/sharer/sharer.php?u=https://cagriapp.com" + hashtags;
+                    final var message = new MessageEntity(
+                            this.currentPerson,
+                            "facebook",
+                            query
+                    );
+                    this.messageService.update(message);
+
                     getUI().ifPresent(ui -> ui.getPage().executeJs(
-                            "window.open($0, '_blank')",
-                            "https://www.facebook.com/sharer/sharer.php?u=https://cagriapp.com&quote=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz?"
+                            "window.open($0, '_blank')", query
                     ));
                 }
         );
@@ -156,20 +175,40 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnWhatsAppIcon = new Image("https://www.svgrepo.com/show/452133/whatsapp.svg", "WhatsApp");
         styleIcon(callHelpOnWhatsAppIcon);
         final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon,
-                e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
-                        "window.open($0, '_blank')",
-                        "https://wa.me/?text=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
-                ))
+                e -> {
+                    final var hashtags = "Yardımınıza ihtiyacım var." + getRequirements();
+                    final var query = "https://wa.me?text=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
+                    final var message = new MessageEntity(
+                            this.currentPerson,
+                            "facebook",
+                            query
+                    );
+                    this.messageService.update(message);
+
+                    getUI().ifPresent(ui -> ui.getPage().executeJs(
+                            "window.open($0, '_blank')", query
+                    ));
+                }
         );
         styleDialogButton((callHelpOnWhatsAppButton.getElement()));
 
         final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
         styleIcon(callHelpOnSmsIcon);
         final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon,
-                e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
-                        "window.open($0, '_blank')",
-                        "sms:?body=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
-                ))
+                e -> {
+                    final var hashtags = "&hashtags" + getRequirements();
+                    final var query = "sms:?body=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
+                    final var message = new MessageEntity(
+                            this.currentPerson,
+                            "facebook",
+                            query
+                    );
+                    this.messageService.update(message);
+
+                    getUI().ifPresent(ui -> ui.getPage().executeJs(
+                            "window.open($0, '_blank')", query
+                    ));
+                }
         );
         styleDialogButton(callHelpOnSmsButton.getElement());
 
@@ -202,74 +241,44 @@ public class HomeView extends VerticalLayout {
          */
 
         final var initialDialog = new Dialog();
-        initialDialog.setCloseOnEsc(false);
-        initialDialog.setCloseOnOutsideClick(false);
-        initialDialog.setWidth("400px");
-        initialDialog.setHeight("200px");
-        initialDialog.getElement().getStyle().set("background-color", "#f5f5f5");
-        initialDialog.getElement().getStyle().set("border-radius", "10px");
-        initialDialog.getElement().getStyle().set("box-shadow", "0 0 10px 0 rgba(0,0,0,0.5)");
+        styleInitialDialog(initialDialog);
 
         final var initialDialogLayout = new VerticalLayout();
-        initialDialogLayout.setAlignItems(Alignment.CENTER);
-        initialDialogLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-        initialDialogLayout.setPadding(true);
-        initialDialogLayout.setSpacing(true);
-        initialDialogLayout.setWidthFull();
-        initialDialogLayout.setHeightFull();
-        initialDialog.add(initialDialogLayout);
+        styleInitialDialogLayout(initialDialogLayout);
+
+        initialDialog.add(
+                initialDialogLayout
+        );
 
         final var initialDialogHeader = new HorizontalLayout();
-        initialDialogHeader.setAlignItems(Alignment.CENTER);
-        initialDialogHeader.setJustifyContentMode(JustifyContentMode.CENTER);
-        initialDialogHeader.setPadding(true);
-        initialDialogHeader.setSpacing(true);
-        initialDialogHeader.setWidthFull();
-        initialDialogHeader.setHeightFull();
-        initialDialogLayout.add(initialDialogHeader);
+        styleInitialDialogHeader(initialDialogHeader);
 
         final var initialDialogBody = new HorizontalLayout();
-        initialDialogBody.setAlignItems(Alignment.CENTER);
-        initialDialogBody.setJustifyContentMode(JustifyContentMode.CENTER);
-        initialDialogBody.setPadding(true);
-        initialDialogBody.setSpacing(true);
-        initialDialogBody.setWidthFull();
-        initialDialogBody.setHeightFull();
+        styleInitialDialogBody(initialDialogBody);
 
         final var initialDialogFooter = new HorizontalLayout();
-        initialDialogFooter.setAlignItems(Alignment.CENTER);
-        initialDialogFooter.setJustifyContentMode(JustifyContentMode.CENTER);
-        initialDialogFooter.setPadding(true);
-        initialDialogFooter.setSpacing(true);
-        initialDialogFooter.setWidthFull();
+        styleInitialDialogFooter(initialDialogFooter);
 
-        initialDialogLayout.add(initialDialogBody, initialDialogFooter);
+        initialDialogLayout.add(
+                initialDialogHeader,
+                initialDialogBody,
+                initialDialogFooter
+        );
 
         final var initialDialogHeaderLabel = new Label("Yardım Çağır");
-        initialDialogHeaderLabel.getStyle().set("font-size", "20px");
-        initialDialogHeaderLabel.getStyle().set("font-weight", "bold");
+        styleInitialDialogHeaderLabel(initialDialogHeaderLabel);
         initialDialogHeader.add(initialDialogHeaderLabel);
 
         final var initialDialogBodyLabel = new Label("Telefon numaranızı giriniz");
-        initialDialogBodyLabel.getStyle().set("font-size", "16px");
+        styleInitialDialogBodyLabel(initialDialogBodyLabel);
         initialDialogBody.add(initialDialogBodyLabel);
 
         final var initialDialogFooterButton = new Button("Kaydet");
-        initialDialogFooterButton.getStyle().set("background-color", "#4caf50");
-        initialDialogFooterButton.getStyle().set("color", "#ffffff");
-        initialDialogFooterButton.getStyle().set("border-radius", "5px");
-        initialDialogFooterButton.getStyle().set("font-size", "16px");
-        initialDialogFooterButton.getStyle().set("font-weight", "bold");
-        initialDialogFooterButton.getStyle().set("padding", "10px");
+        styleInitialDialogFooterButton(initialDialogFooterButton);
         initialDialogFooter.add(initialDialogFooterButton);
 
         final var initialDialogPhoneField = new TextField();
-        initialDialogPhoneField.getStyle().set("font-size", "16px");
-        initialDialogPhoneField.getStyle().set("font-weight", "bold");
-        initialDialogPhoneField.getStyle().set("padding", "10px");
-        initialDialogPhoneField.getStyle().set("border-radius", "5px");
-        initialDialogPhoneField.getStyle().set("border", "1px solid #cccccc");
-        initialDialogPhoneField.getStyle().set("width", "100%");
+        styleInitialDialogPhoneField(initialDialogPhoneField);
         initialDialogBody.add(initialDialogPhoneField);
 
         initialDialogFooterButton.addClickListener(onClickEvent -> {
@@ -403,9 +412,36 @@ public class HomeView extends VerticalLayout {
                 dialog
         );
 
-        icoClose.addClickListener(iev -> {
+        icoClose.addClickListener(onCloseClickEvent -> {
+            requirementService.updateBySessionIdOrPersonId(
+                    currentPerson.getId(),
+                    VaadinSession.getCurrent().getSession().getId(),
+                    getAllSelectedItems()
+            );
+
+            Notification.show(
+                    "İhtiyaçlarınız başarıyla kaydedildi. Lütfen yukarıdaki butonlar yardımı ile sosyal medya hesaplarınızdan yardım çağrınızı paylaşınız."
+                    , 5000, Notification.Position.TOP_CENTER
+            );
             dialog.close();
         });
+    }
+
+    private List<ItemEntity> getAllSelectedItems() {
+        return Stream.of(
+                        this.shelter,
+                        this.nutrition,
+                        this.clothes,
+                        this.baby,
+                        this.disabled,
+                        this.elderly,
+                        this.pet,
+                        this.hygiene,
+                        this.medicine,
+                        this.other
+                ).map(MultiSelectComboBox::getSelectedItems)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     private String getRequirements() {
@@ -420,7 +456,7 @@ public class HomeView extends VerticalLayout {
                 ).map(MultiSelectComboBox::getSelectedItems)
                 .flatMap(Collection::stream)
                 .map(ItemEntity::getTitle)
-                .collect(Collectors.joining(" #"));
+                .collect(Collectors.joining(","));
 
         System.out.println(reqOneLiner);
 
