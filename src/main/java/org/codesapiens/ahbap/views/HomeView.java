@@ -4,6 +4,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -15,7 +16,10 @@ import com.vaadin.flow.server.VaadinSession;
 import org.codesapiens.ahbap.data.entity.ItemEntity;
 import org.codesapiens.ahbap.data.entity.PersonEntity;
 import org.codesapiens.ahbap.data.entity.RequirementEntity;
-import org.codesapiens.ahbap.data.service.*;
+import org.codesapiens.ahbap.data.service.ItemService;
+import org.codesapiens.ahbap.data.service.PersonService;
+import org.codesapiens.ahbap.data.service.RequirementService;
+import org.codesapiens.ahbap.data.service.TagService;
 import org.springframework.data.domain.PageRequest;
 import org.vaadin.elmot.flow.sensors.GeoLocation;
 import software.xdev.vaadin.maps.leaflet.flow.LMap;
@@ -59,6 +63,8 @@ public class HomeView extends VerticalLayout {
     private final MultiSelectComboBox<ItemEntity> hygiene = new MultiSelectComboBox<>();
     private final MultiSelectComboBox<ItemEntity> other = new MultiSelectComboBox<>();
 
+    private final LMap map = new LMap();
+
 
     private PersonEntity currentPerson;
 
@@ -83,18 +89,23 @@ public class HomeView extends VerticalLayout {
         geoLocation.setMaxAge(200000);
         add(geoLocation);
 
-        if (VaadinSession.getCurrent().getAttribute("person") != null) {
-            this.currentPerson = (PersonEntity) VaadinSession.getCurrent().getAttribute("person");
-        } else {
-            this.currentPerson = new PersonEntity();
-        }
+        // Set the coordinates to Kahramanmaraş, Türkiye
+        map.setCenter(new LCenter(37.585, 36.937));
+        map.setZoom(6);
+        map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
+        map.setSizeFull();
+        map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
+
+        add(
+                map
+        );
 
         final var footerButtonsLayout = new HorizontalLayout();
         footerLayout(footerButtonsLayout.getElement());
 
         final var btnFindMe = new Button("Ben neredeyim?");
         footerButton(btnFindMe, "left", "#4caf50");
-        btnFindMe.addClickListener(onClick -> onFindMeClick());
+        btnFindMe.addClickListener(onClick -> getCurrentLocation(map));
 
         final var phoneField = new TextField();
         phoneField.addValueChangeListener(e -> {
@@ -117,10 +128,16 @@ public class HomeView extends VerticalLayout {
 
         final var callHelpOnTwitterIcon = new Image("https://www.svgrepo.com/show/489937/twitter.svg", "WhatsApp");
         styleIcon(callHelpOnTwitterIcon);
-        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
-                "window.open($0, '_blank')",
-                "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz?&url=https://cagriapp.com"
-        )));
+        final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> {
+
+            setRequirements();
+            Notification.show("İhtiyaçlarınız başarıyla kaydedildi.", 3000, Notification.Position.MIDDLE);
+
+            getUI().ifPresent(ui -> ui.getPage().executeJs(
+                    "window.open($0, '_blank')",
+                    "https://twitter.com/intent/tweet?text=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz?&url=https://cagriapp.com"
+            ));
+        });
         styleDialogButton(callHelpOnTwitterButton.getElement());
 
         final var callHelpOnFacebookIcon = new Image("https://www.svgrepo.com/show/452197/facebook.svg", "WhatsApp");
@@ -129,7 +146,7 @@ public class HomeView extends VerticalLayout {
                 e -> {
                     getUI().ifPresent(ui -> ui.getPage().executeJs(
                             "window.open($0, '_blank')",
-                            "https://www.facebook.com/sharer/sharer.php?u=https://cagriapp.com&quote=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz?"
+                            "https://www.facebook.com/sharer/sharer.php?u=https://cagriapp.com&quote=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz?"
                     ));
                 }
         );
@@ -141,7 +158,7 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon,
                 e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
                         "window.open($0, '_blank')",
-                        "https://wa.me/?text=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
+                        "https://wa.me/?text=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
                 ))
         );
         styleDialogButton((callHelpOnWhatsAppButton.getElement()));
@@ -151,7 +168,7 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon,
                 e -> getUI().ifPresent(ui -> ui.getPage().executeJs(
                         "window.open($0, '_blank')",
-                        "sms:?body=ÇAĞRI: " + getRequirementsFromItemBoxes() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
+                        "sms:?body=ÇAĞRI: " + getRequirements() + " için yardım çağırıyorum. Yardım edebilir misiniz? https://cagriapp.com"
                 ))
         );
         styleDialogButton(callHelpOnSmsButton.getElement());
@@ -169,21 +186,146 @@ public class HomeView extends VerticalLayout {
         );
 
         setSizeFull();
-    }
 
-    private String getRequirementsFromItemBoxes() {
-        return Stream.of(
-                        this.shelter,
-                        this.nutrition,
-                        this.clothes,
-                        this.disabled,
-                        this.pet,
-                        this.hygiene,
-                        this.other
-                ).map(MultiSelectComboBox::getSelectedItems)
-                .flatMap(Collection::stream)
-                .map(ItemEntity::getTitle)
-                .collect(Collectors.joining(" #"));
+        /*
+         * Create a dialog to ask for the phone number of the person
+         * who is calling for help. If the person is already registered,
+         * the phone number is already known. Otherwise, the person is
+         * asked to enter the phone number. The phone number is used
+         * to contact the person who is calling for help.
+         *
+         * When the person is registered, the phone number is saved
+         * in the VaadinSession.
+         *
+         * When the person is not registered, the phone number is saved
+         * in the currentPerson object.
+         */
+
+        final var initialDialog = new Dialog();
+        initialDialog.setCloseOnEsc(false);
+        initialDialog.setCloseOnOutsideClick(false);
+        initialDialog.setWidth("400px");
+        initialDialog.setHeight("200px");
+        initialDialog.getElement().getStyle().set("background-color", "#f5f5f5");
+        initialDialog.getElement().getStyle().set("border-radius", "10px");
+        initialDialog.getElement().getStyle().set("box-shadow", "0 0 10px 0 rgba(0,0,0,0.5)");
+
+        final var initialDialogLayout = new VerticalLayout();
+        initialDialogLayout.setAlignItems(Alignment.CENTER);
+        initialDialogLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        initialDialogLayout.setPadding(true);
+        initialDialogLayout.setSpacing(true);
+        initialDialogLayout.setWidthFull();
+        initialDialogLayout.setHeightFull();
+        initialDialog.add(initialDialogLayout);
+
+        final var initialDialogHeader = new HorizontalLayout();
+        initialDialogHeader.setAlignItems(Alignment.CENTER);
+        initialDialogHeader.setJustifyContentMode(JustifyContentMode.CENTER);
+        initialDialogHeader.setPadding(true);
+        initialDialogHeader.setSpacing(true);
+        initialDialogHeader.setWidthFull();
+        initialDialogHeader.setHeightFull();
+        initialDialogLayout.add(initialDialogHeader);
+
+        final var initialDialogBody = new HorizontalLayout();
+        initialDialogBody.setAlignItems(Alignment.CENTER);
+        initialDialogBody.setJustifyContentMode(JustifyContentMode.CENTER);
+        initialDialogBody.setPadding(true);
+        initialDialogBody.setSpacing(true);
+        initialDialogBody.setWidthFull();
+        initialDialogBody.setHeightFull();
+
+        final var initialDialogFooter = new HorizontalLayout();
+        initialDialogFooter.setAlignItems(Alignment.CENTER);
+        initialDialogFooter.setJustifyContentMode(JustifyContentMode.CENTER);
+        initialDialogFooter.setPadding(true);
+        initialDialogFooter.setSpacing(true);
+        initialDialogFooter.setWidthFull();
+
+        initialDialogLayout.add(initialDialogBody, initialDialogFooter);
+
+        final var initialDialogHeaderLabel = new Label("Yardım Çağır");
+        initialDialogHeaderLabel.getStyle().set("font-size", "20px");
+        initialDialogHeaderLabel.getStyle().set("font-weight", "bold");
+        initialDialogHeader.add(initialDialogHeaderLabel);
+
+        final var initialDialogBodyLabel = new Label("Telefon numaranızı giriniz");
+        initialDialogBodyLabel.getStyle().set("font-size", "16px");
+        initialDialogBody.add(initialDialogBodyLabel);
+
+        final var initialDialogFooterButton = new Button("Kaydet");
+        initialDialogFooterButton.getStyle().set("background-color", "#4caf50");
+        initialDialogFooterButton.getStyle().set("color", "#ffffff");
+        initialDialogFooterButton.getStyle().set("border-radius", "5px");
+        initialDialogFooterButton.getStyle().set("font-size", "16px");
+        initialDialogFooterButton.getStyle().set("font-weight", "bold");
+        initialDialogFooterButton.getStyle().set("padding", "10px");
+        initialDialogFooter.add(initialDialogFooterButton);
+
+        final var initialDialogPhoneField = new TextField();
+        initialDialogPhoneField.getStyle().set("font-size", "16px");
+        initialDialogPhoneField.getStyle().set("font-weight", "bold");
+        initialDialogPhoneField.getStyle().set("padding", "10px");
+        initialDialogPhoneField.getStyle().set("border-radius", "5px");
+        initialDialogPhoneField.getStyle().set("border", "1px solid #cccccc");
+        initialDialogPhoneField.getStyle().set("width", "100%");
+        initialDialogBody.add(initialDialogPhoneField);
+
+        initialDialogFooterButton.addClickListener(onClickEvent -> {
+
+            initialDialogPhoneField.setErrorMessage("");
+            initialDialogPhoneField.setRequired(true);
+            initialDialogPhoneField.setRequiredIndicatorVisible(true);
+            if (initialDialogPhoneField.getValue().length() == 11 || initialDialogPhoneField.getValue().length() == 13) {
+
+                if (initialDialogPhoneField.getValue().length() == 11) {
+                    initialDialogPhoneField.setValue("+90" + initialDialogPhoneField.getValue());
+                }
+
+                final var foundPerson = personService.getByPhone(initialDialogPhoneField.getValue());
+
+                if (foundPerson.isPresent()) {
+                    this.currentPerson = foundPerson.get();
+                    this.currentPerson.setLatitude(geoLocation.getValue().getLatitude());
+                    this.currentPerson.setLongitude(geoLocation.getValue().getLongitude());
+                    this.currentPerson.setSessionId(VaadinSession.getCurrent().getSession().getId());
+                    this.currentPerson = personService.update(this.currentPerson);
+
+                    // Add the person to the Vaadin session
+                    VaadinSession.getCurrent().setAttribute("person", this.currentPerson);
+
+                    phoneField.setValue(this.currentPerson.getPhone());
+
+                } else {
+                    this.currentPerson = new PersonEntity();
+                    this.currentPerson.setPhone(initialDialogPhoneField.getValue());
+                    this.currentPerson.setFirstName("İsim");
+                    this.currentPerson.setLastName("Soyisim");
+                    this.currentPerson.setLatitude(geoLocation.getValue().getLatitude());
+                    this.currentPerson.setLongitude(geoLocation.getValue().getLongitude());
+                    // set an emergency avatar image
+                    this.currentPerson.setImageUrl("https://i.imgur.com/1J8wv1M.png");
+                    this.currentPerson.setRegisteredAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+                    this.currentPerson.setSessionId(VaadinSession.getCurrent().getSession().getId());
+                    // save the person to the database
+                    this.currentPerson = personService.update(this.currentPerson);
+
+                    // Add the person to the Vaadin session
+                    VaadinSession.getCurrent().setAttribute("person", this.currentPerson);
+
+                    phoneField.setValue(this.currentPerson.getPhone());
+                }
+
+                initialDialog.close();
+            } else {
+                initialDialogPhoneField.setErrorMessage("Lütfen geçerli bir telefon numarası giriniz");
+            }
+        });
+
+        add(initialDialog);
+        initialDialog.open();
+
     }
 
     private void seedItems() {
@@ -262,120 +404,121 @@ public class HomeView extends VerticalLayout {
         );
 
         icoClose.addClickListener(iev -> {
-
-            final var selectedShelterItems = this.shelter.getSelectedItems();
-            final var selectedNutritionItems = this.nutrition.getSelectedItems();
-            final var selectedClothesItems = this.clothes.getSelectedItems();
-            final var selectedBabyItems = this.baby.getSelectedItems();
-            final var selectedDisabledItems = this.disabled.getSelectedItems();
-            final var selectedElderlyItems = this.elderly.getSelectedItems();
-            final var selectedPetItems = this.pet.getSelectedItems();
-            final var selectedHygieneItems = this.hygiene.getSelectedItems();
-            final var selectedMedicineItems = this.medicine.getSelectedItems();
-            final var selectedOtherItems = this.other.getSelectedItems();
-
-            final var selectedItems = Stream.of(
-                            selectedShelterItems,
-                            selectedNutritionItems,
-                            selectedClothesItems,
-                            selectedBabyItems,
-                            selectedDisabledItems,
-                            selectedElderlyItems,
-                            selectedPetItems,
-                            selectedHygieneItems,
-                            selectedMedicineItems,
-                            selectedOtherItems
-                    ).flatMap(Collection::stream)
-                    .collect(Collectors.toList());
-
-            for (ItemEntity item : selectedItems) {
-                RequirementEntity newReq = new RequirementEntity();
-                newReq.setItem(item);
-                newReq.setQuantity(1.00);
-                newReq.setPriority(1);
-                newReq.setSessionId(VaadinSession.getCurrent().getSession().getId());
-                newReq.setDescription("Açıklama");
-
-                String phoneNumber = this.currentPerson.getPhone();
-                if (this.personService.getByPhone(phoneNumber).isPresent()) {
-                    this.currentPerson = this.personService.getByPhone(phoneNumber).get();
-                } else {
-
-                    PersonEntity newPer = new PersonEntity();
-                    newPer.setPhone(phoneNumber);
-                    newPer.setSessionId(VaadinSession.getCurrent().getSession().getId());
-                    newPer.setRegisteredAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
-                    newPer.setLatitude(this.geoLocation.getValue().getLatitude());
-                    newPer.setLongitude(this.geoLocation.getValue().getLongitude());
-                    newPer.setImageUrl("https://i.ibb.co/0nZ3Z3T/unknown.png");
-                    newPer.setFirstName("İsim");
-                    newPer.setLastName("Soyisim");
-
-                    this.currentPerson = this.personService.update(newPer);
-                }
-
-                newReq.setPerson(this.currentPerson);
-
-                this.requirementService.update(newReq);
-            }
-
-            Notification.show("İhtiyaçlarınız başarıyla kaydedildi.", 3000, Notification.Position.MIDDLE);
-
             dialog.close();
         });
     }
 
-    private void onFindMeClick() {
+    private String getRequirements() {
+        final var reqOneLiner = Stream.of(
+                        this.shelter,
+                        this.nutrition,
+                        this.clothes,
+                        this.disabled,
+                        this.pet,
+                        this.hygiene,
+                        this.other
+                ).map(MultiSelectComboBox::getSelectedItems)
+                .flatMap(Collection::stream)
+                .map(ItemEntity::getTitle)
+                .collect(Collectors.joining(" #"));
 
-        int clickCount = findMeClickCount.incrementAndGet();
+        System.out.println(reqOneLiner);
 
-        final var map = new LMap(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 5);
-        map.setTileLayer(LTileLayer.DEFAULT_OPENSTREETMAP_TILE);
-        map.setSizeFull();
+        return reqOneLiner;
+    }
 
-        if (clickCount == 1) {
+    private void setRequirements() {
+        final var selectedShelterItems = this.shelter.getSelectedItems();
+        final var selectedNutritionItems = this.nutrition.getSelectedItems();
+        final var selectedClothesItems = this.clothes.getSelectedItems();
+        final var selectedBabyItems = this.baby.getSelectedItems();
+        final var selectedDisabledItems = this.disabled.getSelectedItems();
+        final var selectedElderlyItems = this.elderly.getSelectedItems();
+        final var selectedPetItems = this.pet.getSelectedItems();
+        final var selectedHygieneItems = this.hygiene.getSelectedItems();
+        final var selectedMedicineItems = this.medicine.getSelectedItems();
+        final var selectedOtherItems = this.other.getSelectedItems();
 
-            // TODO: add some logic here for called Markers (token)
-            map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
-            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+        final var selectedItems = Stream.of(
+                        selectedShelterItems,
+                        selectedNutritionItems,
+                        selectedClothesItems,
+                        selectedBabyItems,
+                        selectedDisabledItems,
+                        selectedElderlyItems,
+                        selectedPetItems,
+                        selectedHygieneItems,
+                        selectedMedicineItems,
+                        selectedOtherItems
+                ).flatMap(Collection::stream)
+                .collect(Collectors.toList());
 
-            final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
-            final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
+        for (ItemEntity item : selectedItems) {
+            RequirementEntity newReq = new RequirementEntity();
+            newReq.setItem(item);
+            newReq.setQuantity(1.00);
+            newReq.setPriority(1);
+            newReq.setSessionId(VaadinSession.getCurrent().getSession().getId());
+            newReq.setDescription("Açıklama");
 
-            map.addMarkerClickListener(event -> {
-                final var dialog = new Dialog();
+            String phoneNumber = this.currentPerson.getPhone();
+            if (this.personService.getByPhone(phoneNumber).isPresent()) {
+                this.currentPerson = this.personService.getByPhone(phoneNumber).get();
+            } else {
 
-                // Add a close button to the dialog
-                final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> dialog.close());
+                PersonEntity newPer = new PersonEntity();
+                newPer.setPhone(phoneNumber);
+                newPer.setSessionId(VaadinSession.getCurrent().getSession().getId());
+                newPer.setRegisteredAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")));
+                newPer.setLatitude(this.geoLocation.getValue().getLatitude());
+                newPer.setLongitude(this.geoLocation.getValue().getLongitude());
+                newPer.setImageUrl("https://i.ibb.co/0nZ3Z3T/unknown.png");
+                newPer.setFirstName("İsim");
+                newPer.setLastName("Soyisim");
 
-                // Add the user profile layout to the dialog
-                final var profileLayout = new ProfileLayout(
-                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                        this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
-                        this.currentPerson.getPhone(),
-                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
-                        getRequirementsFromItemBoxes()
-                );
+                this.currentPerson = this.personService.update(newPer);
+            }
 
-                // Add the button to the dialog
-                dialog.add(closeButton);
-                dialog.add(profileLayout);
+            newReq.setPerson(this.currentPerson);
 
-                dialog.open();
+            this.requirementService.update(newReq);
+        }
+    }
 
-                add(dialog);
+    private void getCurrentLocation(LMap map) {
 
+        map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+        map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+
+        final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+        final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
+
+        map.addMarkerClickListener(event -> {
+            final var dialog = new Dialog();
+            final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> {
+                dialog.close();
             });
 
-            map.addLComponents(markerMyCoordinates);
+            // Add the user profile layout to the dialog
+            final var profileLayout = new ProfileLayout(
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                    this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
+                    this.currentPerson.getPhone(),
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
+                    getRequirements()
+            );
 
-            add(map);
+            dialog.add(
+                    closeButton,
+                    profileLayout
+            );
 
-        } else {
-            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
-        }
+            dialog.open();
+            add(dialog);
+        });
+
+        map.addLComponents(markerMyCoordinates);
+
 
     }
 
