@@ -2,7 +2,6 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@gl0b3/materialicons": "1.0.0",
     "@polymer/iron-icon": "3.0.1",
     "@polymer/iron-iconset-svg": "3.0.1",
     "@polymer/iron-list": "3.1.0",
@@ -229,13 +228,11 @@
     "@polymer/polymer": "$@polymer/polymer",
     "date-fns": "$date-fns",
     "@vaadin/multi-select-combo-box": "$@vaadin/multi-select-combo-box",
-    "@gl0b3/materialicons": "$@gl0b3/materialicons",
     "leaflet": "$leaflet",
     "line-awesome": "$line-awesome"
   },
   "vaadin": {
     "dependencies": {
-      "@gl0b3/materialicons": "1.0.0",
       "@polymer/iron-icon": "3.0.1",
       "@polymer/iron-iconset-svg": "3.0.1",
       "@polymer/iron-list": "3.1.0",
@@ -357,6 +354,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "5688119861f684680f0dc2c2c87ea0bc22dc3d18982c82fadc7830c5f8664032"
+    "hash": "5d16de24ce8bbd098e61141cba28eaefdaccc740deab7b6e2a56c8db2733e2d2"
   }
 }

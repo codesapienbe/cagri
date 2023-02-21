@@ -2,8 +2,7 @@ version: "3.7"
 
 services:
   app:
-    image: "yilmazchef/konum:latest"
-    container_name: "konum-app"
+    image: "yilmazchef/cagri:latest"
     depends_on:
       db:
         condition: service_healthy
@@ -12,39 +11,37 @@ services:
       - "8080:8080"
       - "8443:8443"
     volumes:
-      - "konum-app-disk:/app/data"
+      - "cagri-app-disk:/app/data"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/konumdb
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/cagridb
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
       - SPRING_JPA_SHOW_SQL=false
       - SPRING_SQL_INIT_MODE=always
     networks:
-      - konum-net
+      - codesapiens
 
   db:
     image: "postgres:latest"
-    container_name: "konum-db"
     restart: "no"
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres -d konumdb" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d cagridb" ]
     volumes:
-      - "konum-database-disk:/var/lib/postgresql/data"
+      - "cagri-db-disk:/var/lib/postgresql/data"
     environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=konumdb
       - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=cagridb
     networks:
-      - konum-net
+      - codesapiens
 
   dba:
     image: "dpage/pgadmin4:latest"
-    container_name: "konum-dba"
     restart: "on-failure"
     ports:
       - "5433:80"
@@ -55,15 +52,15 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=postgres
       - PGADMIN_LISTEN_PORT=80
     networks:
-      - konum-net
+      - codesapiens
 
 networks:
-  konum-net:
+  codesapiens:
     driver: bridge
 
 volumes:
-  konum-app-disk:
+  cagri-app-disk:
     driver: local
-  konum-database-disk:
+  cagri-db-disk:
     driver: local
 
