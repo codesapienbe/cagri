@@ -330,11 +330,12 @@ public class HomeView extends VerticalLayout {
 
     private void bindMapData() {
         final var reqs = requirementService.getRequirementsGroupedByPerson();
-        for (PersonDto person : reqs.keySet()) {
 
-            final var tagText = "Sorgu: " + person.getLatitude() + ", " + person.getLongitude()
+        reqs.forEach( (p, rs) -> {
+            
+            final var tagText = "Sorgu: " + p.getLatitude() + ", " + p.getLongitude()
                     + " konumundaki kullanici bilgileri sorgulandi.";
-            final var markerMyCoordinates = new LMarker(person.getLatitude(), person.getLongitude(), tagText);
+            final var markerMyCoordinates = new LMarker(p.getLatitude(), p.getLongitude(), tagText);
 
             map.addMarkerClickListener(event -> {
 
@@ -343,27 +344,31 @@ public class HomeView extends VerticalLayout {
                     dialog.close();
                 });
 
-                final var reqsAsString = reqs.get(person).stream().map(req -> req.getItem().toString())
+                final var reqsAsString = rs.stream().map(req -> req.getItem().toString())
                         .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
 
                 // Add the user profile layout to the dialog
                 final var profileLayout = new ProfileLayout(
                         "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-                        person.getFirstName() + " " + person.getLastName(),
-                        person.getPhone(),
+                        p.getFullName(),
+                        p.getPhone(),
                         DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
-                        reqsAsString);
+                        reqsAsString
+                );
+
+                dialog.add(profileLayout, closeButton);
+                dialog.open();
 
                 dialog.add(
-                        closeButton,
-                        profileLayout);
+                    closeButton,
+                    profileLayout);
 
                 dialog.open();
                 add(dialog);
             });
 
             map.addLComponents(markerMyCoordinates);
-        }
+        });
     }
 
     private void seedItems() {

@@ -50,11 +50,11 @@ public class MockDataLoader implements CommandLineRunner {
         if (tagRepository.count() == 0) {
             seedTags();
         }
-        
+
         if (requirementRepository.count() == 0) {
             seedRequirements();
         }
-        
+
         if (messageRepository.count() == 0) {
             seedMessages();
         }
@@ -97,21 +97,24 @@ public class MockDataLoader implements CommandLineRunner {
 
     public void seedMessages() {
 
+        final var random = new Random();
         final var requirements = requirementRepository.findAll();
 
         requirements.forEach(req -> {
 
-            final var messages = IntStream.range(0, 4).mapToObj(index -> {
+            final var messages = IntStream.range(0, 2).mapToObj(index -> {
+
+                final var randomChannel = random.nextInt(2);
 
                 final var message = new MessageEntity();
                 message.setSender(req.getPerson());
-                message.setChannel(index % 2 == 0 ? "twitter" : "whatsapp");
+                message.setChannel(randomChannel % 2 == 0 ? "twitter" : "whatsapp");
                 message.setText("Message: I need " + req.getItem().getTitle());
                 message.setDate(LocalDate.now());
                 message.setTime(LocalTime.now());
 
                 return message;
-        
+
             }).toArray(MessageEntity[]::new);
 
             saveMessagesToDB(messages);
@@ -124,23 +127,249 @@ public class MockDataLoader implements CommandLineRunner {
         messageRepository.saveAll(Arrays.asList(messages));
     }
 
+    public Map<String, Double[]> generateCities() {
+        final var cities = new HashMap<String, Double[]>(); // city, [latitude, longitude]
+        cities.put("Istanbul", new Double[] { 41.0082, 28.9784 });
+        cities.put("Ankara", new Double[] { 39.9208, 32.8541 });
+        cities.put("Izmir", new Double[] { 38.4189, 27.1287 });
+        cities.put("Bursa", new Double[] { 40.1824, 29.0616 });
+        cities.put("Adana", new Double[] { 37.0017, 35.3289 });
+        cities.put("Gaziantep", new Double[] { 37.0594, 37.3828 });
+        cities.put("Konya", new Double[] { 37.8715, 32.4843 });
+        cities.put("Antalya", new Double[] { 36.9081, 30.6956 });
+        cities.put("Kayseri", new Double[] { 38.7312, 35.4784 });
+        cities.put("Eskisehir", new Double[] { 39.7767, 30.5206 });
+        cities.put("Samsun", new Double[] { 41.2928, 36.3313 });
+        cities.put("Diyarbakir", new Double[] { 37.9146, 40.2306 });
+        cities.put("Sanliurfa", new Double[] { 37.1671, 38.7939 });
+        cities.put("Malatya", new Double[] { 38.3558, 38.3096 });
+        cities.put("Gebze", new Double[] { 40.7997, 29.4308 });
+        cities.put("Denizli", new Double[] { 37.7765, 29.0864 });
+        cities.put("Manisa", new Double[] { 38.6138, 27.4216 });
+        cities.put("Kahramanmaras", new Double[] { 37.5853, 36.9376 });
+        cities.put("Mersin", new Double[] { 36.8, 34.6333 });
+        cities.put("Sivas", new Double[] { 39.7452, 37.0168 });
+        cities.put("Kocaeli", new Double[] { 40.8531, 29.8813 });
+        cities.put("Adiyaman", new Double[] { 37.7648, 38.2786 });
+        cities.put("Batman", new Double[] { 37.8814, 41.1357 });
+        cities.put("Kirsehir", new Double[] { 39.1422, 34.1708 });
+        cities.put("Kastamonu", new Double[] { 41.3888, 33.7825 });
+        cities.put("Karaman", new Double[] { 37.175, 33.2281 });
+        cities.put("Kilis", new Double[] { 36.7187, 37.1212 });
+        cities.put("Osmaniye", new Double[] { 37.0742, 36.2461 });
+        cities.put("Rize", new Double[] { 41.0208, 40.5236 });
+        cities.put("Trabzon", new Double[] { 41.0053, 39.7267 });
+        cities.put("Zonguldak", new Double[] { 41.4567, 31.7986 });
+        cities.put("Aydin", new Double[] { 37.8444, 27.8456 });
+        cities.put("Balikesir", new Double[] { 39.6484, 27.8826 });
+        cities.put("Bilecik", new Double[] { 40.1539, 29.9792 });
+        cities.put("Bingol", new Double[] { 38.8857, 40.4981 });
+        cities.put("Bitlis", new Double[] { 38.3953, 42.124 });
+        cities.put("Bolu", new Double[] { 40.7356, 31.6069 });
+        cities.put("Burdur", new Double[] { 37.7217, 30.2881 });
+        cities.put("Canakkale", new Double[] { 40.1539, 26.4064 });
+        cities.put("Corum", new Double[] { 40.5503, 34.9556 });
+        cities.put("Denizli", new Double[] { 37.7765, 29.0864 });
+        cities.put("Duzce", new Double[] { 40.8431, 31.1565 });
+        cities.put("Edirne", new Double[] { 41.6764, 26.5554 });
+        cities.put("Elazig", new Double[] { 38.674, 39.2237 });
+        cities.put("Erzincan", new Double[] { 39.7507, 39.4922 });
+        cities.put("Erzurum", new Double[] { 39.9042, 41.2672 });
+        cities.put("Giresun", new Double[] { 40.9128, 38.3895 });
+        cities.put("Hatay", new Double[] { 36.4014, 36.349 });
+        cities.put("Igdir", new Double[] { 39.9172, 44.0361 });
+        cities.put("Iskenderun", new Double[] { 36.5833, 36.1667 });
+        cities.put("Isparta", new Double[] { 37.7648, 30.5567 });
+        cities.put("Kahramanmaras", new Double[] { 37.5853, 36.9376 });
+        cities.put("Karabuk", new Double[] { 41.2, 32.6333 });
+        cities.put("Karaman", new Double[] { 37.175, 33.2281 });
+        cities.put("Kars", new Double[] { 40.6083, 43.0972 });
+        cities.put("Kastamonu", new Double[] { 41.3888, 33.7825 });
+        cities.put("Kayseri", new Double[] { 38.7312, 35.4784 });
+        cities.put("Kilis", new Double[] { 36.7187, 37.1212 });
+        cities.put("Kirikkale", new Double[] { 39.8467, 33.5158 });
+        cities.put("Kirklareli", new Double[] { 41.7378, 27.2166 });
+        cities.put("Kirsehir", new Double[] { 39.1422, 34.1708 });
+        cities.put("Kocaeli", new Double[] { 40.8531, 29.8813 });
+        cities.put("Konya", new Double[] { 37.8715, 32.4849 });
+        cities.put("Kutahya", new Double[] { 39.4237, 29.9833 });
+        cities.put("Malatya", new Double[] { 38.3557, 38.3096 });
+        cities.put("Manisa", new Double[] { 38.6138, 27.4216 });
+        cities.put("Mardin", new Double[] { 37.3111, 40.7425 });
+        cities.put("Mersin", new Double[] { 36.8, 34.6333 });
+        cities.put("Nevsehir", new Double[] { 38.6244, 34.7239 });
+        cities.put("Nigde", new Double[] { 37.9761, 34.6853 });
+        cities.put("Ordu", new Double[] { 40.9833, 37.8833 });
+        cities.put("Osmaniye", new Double[] { 37.0742, 36.2461 });
+        cities.put("Rize", new Double[] { 41.0208, 40.5236 });
+        cities.put("Sakarya", new Double[] { 40.6944, 30.4383 });
+        cities.put("Samsun", new Double[] { 41.2865, 36.3314 });
+        cities.put("Siirt", new Double[] { 37.9442, 41.9325 });
+        cities.put("Sinop", new Double[] { 42.0231, 35.1539 });
+        cities.put("Sirnak", new Double[] { 37.5228, 42.4611 });
+        cities.put("Sivas", new Double[] { 39.7456, 37.0172 });
+        cities.put("Tekirdag", new Double[] { 40.9833, 27.5167 });
+        cities.put("Tokat", new Double[] { 40.3167, 36.55 });
+        cities.put("Trabzon", new Double[] { 41.0053, 39.7267 });
+        cities.put("Tunceli", new Double[] { 39.1167, 39.5333 });
+        cities.put("Usak", new Double[] { 38.6828, 29.4081 });
+        cities.put("Van", new Double[] { 38.4947, 43.38 });
+        cities.put("Yalova", new Double[] { 40.65, 29.2667 });
+        cities.put("Yozgat", new Double[] { 39.8189, 34.8142 });
+        cities.put("Zonguldak", new Double[] { 41.4567, 31.7989 });
+
+        return cities;
+    }
+
+    public List<String[]> generateRandomTurkishNames() {
+        
+        // Ali Kuşçu, Ayşe Yılmaz, Mehmet Ak, Fatma Özdemir, Hasan Kaya, Özlem Çelik,
+        // Mustafa Yıldız, Zeynep Korkmaz, Ahmet Yıldırım, Emine Kılıç, Mehmet Çetin,
+        // Ayşe Kaya, Hasan Yılmaz, Özlem Yıldırım, Mustafa Korkmaz, Zeynep Çelik,
+        // Ahmet Kılıç, Emine Çetin, Mehmet Kaya, Ayşe Yıldırım, Hasan Korkmaz,
+        // Özlem Kılıç, Mustafa Çelik, Zeynep Çetin, Ahmet Yılmaz, Emine Yıldırım,
+        // Mehmet Korkmaz, Ayşe Kılıç, Hasan Çelik, Özlem Çetin, Mustafa Yılmaz,
+        // Zeynep Yıldırım, Ahmet Korkmaz, Emine Kılıç, Mehmet Çelik, Ayşe Çetin,
+        // Hasan Yılmaz, Özlem Yıldırım, Mustafa Kılıç, Zeynep Çetin, Ahmet Çelik,
+        // Emine Yılmaz, Mehmet Yıldırım, Ayşe Korkmaz, Hasan Kılıç, Özlem Çelik,
+        // Mustafa Çetin, Zeynep Yılmaz, Ahmet Yıldırım, Emine Korkmaz, Mehmet Kılıç,
+        // Ayşe Çelik, Hasan Çetin, Özlem Yılmaz, Mustafa Yıldırım, Zeynep Korkmaz,
+        // Ahmet Kılıç, Emine Çetin, Mehmet Çelik, Ayşe Yılmaz, Hasan Yıldırım,
+        // Özlem Korkmaz, Mustafa Kılıç, Zeynep Çelik, Ahmet Çetin, Emine Yılmaz,
+        // Mehmet Yıldırım, Ayşe Korkmaz, Hasan Kılıç, Özlem Çelik, Mustafa Çetin,
+        // Piri Reis, İsmail Hakkı Baltacıoğlu, Afet İnan, Hüseyin Avni Dilligil,
+        // Muazzez İlmiye Çığ, Türkan Saylan, Aziz Sancar,
+
+        final var names = new ArrayList<String[]>();
+
+        names.add(new String[] { "Ali", "Kuşçu" });
+        names.add(new String[] { "Ayşe", "Yılmaz" });
+        names.add(new String[] { "Mehmet", "Ak" });
+        names.add(new String[] { "Fatma", "Özdemir" });
+        names.add(new String[] { "Hasan", "Kaya" });
+        names.add(new String[] { "Özlem", "Çelik" });
+        names.add(new String[] { "Mustafa", "Yıldız" });
+        names.add(new String[] { "Zeynep", "Korkmaz" });
+        names.add(new String[] { "Ahmet", "Yıldırım" });
+        names.add(new String[] { "Emine", "Kılıç" });
+        names.add(new String[] { "Mehmet", "Çetin" });
+        names.add(new String[] { "Ayşe", "Kaya" });
+        names.add(new String[] { "Hasan", "Yılmaz" });
+        names.add(new String[] { "Özlem", "Yıldırım" });
+        names.add(new String[] { "Mustafa", "Korkmaz" });
+        names.add(new String[] { "Zeynep", "Çelik" });
+        names.add(new String[] { "Ahmet", "Kılıç" });
+        names.add(new String[] { "Emine", "Çetin" });
+        names.add(new String[] { "Mehmet", "Kaya" });
+        names.add(new String[] { "Ayşe", "Yıldırım" });
+        names.add(new String[] { "Hasan", "Korkmaz" });
+        names.add(new String[] { "Özlem", "Kılıç" });
+        names.add(new String[] { "Mustafa", "Çelik" });
+        names.add(new String[] { "Zeynep", "Çetin" });
+        names.add(new String[] { "Ahmet", "Yılmaz" });
+        names.add(new String[] { "Emine", "Yıldırım" });
+        names.add(new String[] { "Mehmet", "Korkmaz" });
+        names.add(new String[] { "Ayşe", "Kılıç" });
+        names.add(new String[] { "Hasan", "Çelik" });
+        names.add(new String[] { "Özlem", "Çetin" });
+        names.add(new String[] { "Mustafa", "Yılmaz" });
+        names.add(new String[] { "Zeynep", "Yıldırım" });
+        names.add(new String[] { "Ahmet", "Korkmaz" });
+        names.add(new String[] { "Emine", "Kılıç" });
+        names.add(new String[] { "Mehmet", "Çelik" });
+        names.add(new String[] { "Ayşe", "Çetin" });
+        names.add(new String[] { "Hasan", "Yılmaz" });
+        names.add(new String[] { "Özlem", "Yıldırım" });
+        names.add(new String[] { "Mustafa", "Kılıç" });
+        names.add(new String[] { "Zeynep", "Çelik" });
+        names.add(new String[] { "Ahmet", "Çetin" });
+        names.add(new String[] { "Emine", "Yılmaz" });
+        names.add(new String[] { "Mehmet", "Yıldırım" });
+        names.add(new String[] { "Ayşe", "Korkmaz" });
+        names.add(new String[] { "Hasan", "Kılıç" });
+        names.add(new String[] { "Özlem", "Çelik" });
+        names.add(new String[] { "Mustafa", "Çetin" });
+        names.add(new String[] { "Zeynep", "Yılmaz" });
+        names.add(new String[] { "Ahmet", "Yıldırım" });
+        names.add(new String[] { "Emine", "Korkmaz" });
+        names.add(new String[] { "Mehmet", "Kılıç" });
+        names.add(new String[] { "Ayşe", "Çelik" });
+        names.add(new String[] { "Hasan", "Çetin" });
+        names.add(new String[] { "Özlem", "Yılmaz" });
+        names.add(new String[] { "Mustafa", "Yıldırım" });
+        names.add(new String[] { "Zeynep", "Korkmaz" });
+        names.add(new String[] { "Ahmet", "Kılıç" });
+        names.add(new String[] { "Emine", "Çelik" });
+        names.add(new String[] { "Mehmet", "Çetin" });
+        names.add(new String[] { "Ayşe", "Yılmaz" });
+        names.add(new String[] { "Hasan", "Yıldırım" });
+        names.add(new String[] { "Özlem", "Korkmaz" });
+        names.add(new String[] { "Mustafa", "Kılıç" });
+        names.add(new String[] { "Zeynep", "Çelik" });
+        names.add(new String[] { "Ahmet", "Çetin" });
+        names.add(new String[] { "Emine", "Yılmaz" });
+        names.add(new String[] { "Mehmet", "Yıldırım" });
+        names.add(new String[] { "Ayşe", "Korkmaz" });
+        names.add(new String[] { "Hasan", "Kılıç" });
+        names.add(new String[] { "Özlem", "Çelik" });
+        names.add(new String[] { "Mustafa", "Çetin" });
+        names.add(new String[] { "Zeynep", "Yılmaz" });
+        names.add(new String[] { "Ahmet", "Yıldırım" });
+        names.add(new String[] { "Emine", "Korkmaz" });
+        names.add(new String[] { "Mehmet", "Kılıç" });
+        names.add(new String[] { "Ayşe", "Çelik" });
+        names.add(new String[] { "Hasan", "Çetin" });
+        names.add(new String[] { "Özlem", "Yılmaz" });
+        names.add(new String[] { "Mustafa", "Yıldırım" });
+        names.add(new String[] { "Zeynep", "Korkmaz" });
+        names.add(new String[] { "Ahmet", "Kılıç" });
+        names.add(new String[] { "Emine", "Çelik" });
+        names.add(new String[] { "Mehmet", "Çetin" });
+        names.add(new String[] { "Ayşe", "Yılmaz" });
+        names.add(new String[] { "Hasan", "Yıldırım" });
+        names.add(new String[] { "Özlem", "Korkmaz" });
+        names.add(new String[] { "Mustafa", "Kılıç" });
+        names.add(new String[] { "Zeynep", "Çelik" });
+        names.add(new String[] { "Ahmet", "Çetin" });
+        names.add(new String[] { "Emine", "Yılmaz" });
+        names.add(new String[] { "Mehmet", "Yıldırım" });
+        names.add(new String[] { "Ayşe", "Korkmaz" });
+        names.add(new String[] { "Hasan", "Kılıç" });
+        names.add(new String[] { "Özlem", "Çelik" });
+        names.add(new String[] { "Mustafa", "Çetin" });
+        names.add(new String[] { "Zeynep", "Yılmaz" });
+        names.add(new String[] { "Ahmet", "Yıldırım" });
+        names.add(new String[] { "Emine", "Korkmaz" });
+
+        return names;
+    }
+
     public void seedPeople() {
         final var avatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         final var random = new Random();
         final var people = new ArrayList<PersonEntity>();
+        final var cities = generateCities();
+        final var names = generateRandomTurkishNames();
 
-        for (int i = 0; i < 25; i++) {
-            final var person = new PersonEntity();
-            person.setFirstName("FirstName" + i);
-            person.setLastName("LastName" + i);
-            person.setImageUrl(avatar);
-            person.setPhone("0532" + random.nextInt(9999999) + 1000000);
-            // add 100 kilometers to the geolocation for each person
-            person.setLatitude(39.92077 + (i * 10));
-            person.setLongitude(32.85411 + (i * 1));
-            person.setRegisteredAt(NOW);
-            people.add(person);
-        }
+        cities.forEach((c, l) -> {
+
+            IntStream.rangeClosed(1, 100).forEach(i -> {
+
+                final var person = new PersonEntity();
+                person.setFirstName(names.get(random.nextInt(names.size()))[0]);
+                person.setLastName(names.get(random.nextInt(names.size()))[1]);
+                person.setImageUrl(avatar);
+                person.setPhone("0532" + random.nextInt(9999999) + 1000000);
+                final var lat = l[0] + random.nextDouble() - 0.5;
+                final var lon = l[1] + random.nextDouble() - 0.5;
+                person.setLatitude(lat);
+                person.setLongitude(lon);
+                person.setRegisteredAt(NOW);
+                people.add(person);
+
+            });
+
+        });
 
         personRepository.saveAll(people);
     }
