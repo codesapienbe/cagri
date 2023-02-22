@@ -125,110 +125,25 @@ public class MockDataLoader implements CommandLineRunner {
     }
 
     public void seedPeople() {
-        final var defaultAvatarImageForEachPerson = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        // Generate 10.000 people with random geolocation for each person and save them to DB using an Iterable
+        final var avatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+        final var random = new Random();
+        final var people = new ArrayList<PersonEntity>();
 
-        final var person01 = new PersonEntity();
-        person01.setFirstName("Ahmet");
-        person01.setLastName("Yilmaz");
-        person01.setImageUrl(defaultAvatarImageForEachPerson);
-        person01.setPhone("0532 123 45 67");
-        // random geolocation from Kahramanmaras, Turkiye
-        person01.setLatitude(37.585);
-        person01.setLongitude(36.937);
-        person01.setRegisteredAt(NOW);
+        for (int i = 0; i < 100; i++) {
+            final var person = new PersonEntity();
+            person.setFirstName("FirstName" + i);
+            person.setLastName("LastName" + i);
+            person.setImageUrl(avatar);
+            person.setPhone("0532" + random.nextInt(9999999) + 1000000);
+            // generate a random geo location within Türkiye (37.000000, 35.321333) and (42.000000, 44.000000)
+            person.setLatitude(37.000000 + (42.000000 - 37.000000) * random.nextDouble());
+            person.setLongitude(35.321333 + (44.000000 - 35.321333) * random.nextDouble());
+            person.setRegisteredAt(NOW);
+            people.add(person);
+        }
 
-        final var person02 = new PersonEntity();
-        person02.setFirstName("Mehmet");
-        person02.setLastName("Kara");
-        person02.setImageUrl(defaultAvatarImageForEachPerson);
-        person02.setPhone("0532 123 15 45");
-        // random geolocation from Kahramanmaras, Turkiye
-        person02.setLatitude(37.585);
-        person02.setLongitude(36.457);
-        person02.setRegisteredAt(NOW);
-
-        final var person03 = new PersonEntity();
-        person03.setFirstName("Ali");
-        person03.setLastName("Yilmaz");
-        person03.setImageUrl(defaultAvatarImageForEachPerson);
-        person03.setPhone("0532 423 99 64");
-        // random geolocation from Adana, Turkiye
-        person03.setLatitude(37.585);
-        person03.setLongitude(36.937);
-        person03.setRegisteredAt(NOW);
-
-        final var person04 = new PersonEntity();
-        person04.setFirstName("Veli");
-        person04.setLastName("Kara");
-        person04.setImageUrl(defaultAvatarImageForEachPerson);
-        person04.setPhone("0535 321 35 10");
-        // random geolocation from Adana, Turkiye
-        person04.setLatitude(37.585);
-        person04.setLongitude(36.457);
-        person04.setRegisteredAt(NOW);
-
-        final var person05 = new PersonEntity();
-        person05.setFirstName("Ayse");
-        person05.setLastName("Yilmaz");
-        person05.setImageUrl(defaultAvatarImageForEachPerson);
-        person05.setPhone("0532 123 45 23");
-        // random geolocation from Kahramanmaras, Turkiye
-        person05.setLatitude(37.585);
-        person05.setLongitude(36.937);
-        person05.setRegisteredAt(NOW);
-
-        final var person06 = new PersonEntity();
-        person06.setFirstName("Fatma");
-        person06.setLastName("Kara");
-        person06.setImageUrl(defaultAvatarImageForEachPerson);
-        person06.setPhone("0532 123 22 11");
-        // random geolocation from Kahramanmaras, Turkiye
-        person06.setLatitude(37.585);
-        person06.setLongitude(36.457);
-        person06.setRegisteredAt(NOW);
-
-        final var person07 = new PersonEntity();
-        person07.setFirstName("Kemal");
-        person07.setLastName("Yilmaz");
-        person07.setImageUrl(defaultAvatarImageForEachPerson);
-        person07.setPhone("0532 123 88 76");
-        // random geolocation from Kahramanmaras, Turkiye
-        person07.setLatitude(37.585);
-        person07.setLongitude(36.937);
-        person07.setRegisteredAt(NOW);
-
-        final var person08 = new PersonEntity();
-        person08.setFirstName("Hasan");
-        person08.setLastName("Kara");
-        person08.setImageUrl(defaultAvatarImageForEachPerson);
-        person08.setPhone("0532 123 54 77");
-        // random geolocation from Kahramanmaras, Turkiye
-        person08.setLatitude(37.585);
-        person08.setLongitude(36.457);
-        person08.setRegisteredAt(NOW);
-
-        final var person09 = new PersonEntity();
-        person09.setFirstName("Huseyin");
-        person09.setLastName("Yilmaz");
-        person09.setImageUrl(defaultAvatarImageForEachPerson);
-        person09.setPhone("0532 123 34 16");
-        // random geolocation from Kahramanmaras, Turkiye
-        person09.setLatitude(37.585);
-        person09.setLongitude(36.937);
-        person09.setRegisteredAt(NOW);
-
-        final var person10 = new PersonEntity();
-        person10.setFirstName("Mehmet");
-        person10.setLastName("Kara");
-        person10.setImageUrl(defaultAvatarImageForEachPerson);
-        person10.setPhone("0532 123 21 12");
-        // random geolocation from Kahramanmaras, Turkiye
-        person10.setLatitude(37.585);
-        person10.setLongitude(36.457);
-        person10.setRegisteredAt(NOW);
-
-        savePeopleToDB(person01, person02, person03, person04, person05, person06, person07, person08, person09, person10);
-
+        personRepository.saveAll(people);
     }
 
     public void savePeopleToDB(PersonEntity... people) {
