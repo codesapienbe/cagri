@@ -13,6 +13,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
+
+import org.codesapiens.data.dto.PersonDto;
+import org.codesapiens.data.dto.RequirementDto;
 import org.codesapiens.data.entity.ItemEntity;
 import org.codesapiens.data.entity.MessageEntity;
 import org.codesapiens.data.entity.PersonEntity;
@@ -30,15 +33,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.codesapiens.data.service.StyleUtils.*;
 
-
-@PageTitle("YARDIM ÇAĞIR!")
-@Route("home")
+@PageTitle("YARDIM CAGRISI!")
+@Route("")
 public class HomeView extends VerticalLayout {
 
     private static final String BASE_URL = "https://cagriapp.com/";
@@ -69,7 +72,6 @@ public class HomeView extends VerticalLayout {
 
     private final LMap map = new LMap();
 
-
     private PersonEntity currentPerson;
 
     private final GeoLocation geoLocation = new GeoLocation();
@@ -78,7 +80,8 @@ public class HomeView extends VerticalLayout {
     private final AtomicInteger findMeClickCount = new AtomicInteger(0);
 
     public HomeView(PersonService personService, ItemService itemService,
-                    TagService tagService, RequirementService requirementService, ShareService shareService, MessageService messageService) {
+            TagService tagService, RequirementService requirementService, ShareService shareService,
+            MessageService messageService) {
 
         this.personService = personService;
         this.itemService = itemService;
@@ -101,16 +104,14 @@ public class HomeView extends VerticalLayout {
         map.setSizeFull();
         map.addMarkerClickListener(onMarkerClick -> System.out.println(onMarkerClick.getTag()));
 
-        add(
-                map
-        );
+        add(map);
 
         final var footerButtonsLayout = new HorizontalLayout();
         footerLayout(footerButtonsLayout.getElement());
 
         final var btnFindMe = new Button("Beni bul!");
         footerButton(btnFindMe, "left", "#4caf50");
-        btnFindMe.addClickListener(onClick -> getCurrentLocation(map));
+        btnFindMe.addClickListener(onClick -> getCurrentLocation());
 
         final var phoneField = new TextField();
         phoneField.addValueChangeListener(e -> {
@@ -135,18 +136,17 @@ public class HomeView extends VerticalLayout {
         styleIcon(callHelpOnTwitterIcon);
         final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> {
             final var hashtags = "&hashtags=" + getRequirements();
-            final var query = "https://twitter.com/intent/tweet?text=Benim ihtiyaçlarım: " + hashtags + "&url=https://cagriapp.com";
+            final var query = "https://twitter.com/intent/tweet?text=Benim ihtiyaçlarım: " + hashtags
+                    + "&url=https://cagriapp.com";
 
             final var message = new MessageEntity(
                     this.currentPerson,
                     "twitter",
-                    query
-            );
+                    query);
             this.messageService.update(message);
 
             getUI().ifPresent(ui -> ui.getPage().executeJs(
-                    "window.open($0, '_blank')", query
-            ));
+                    "window.open($0, '_blank')", query));
         });
         styleDialogButton(callHelpOnTwitterButton.getElement());
 
@@ -159,15 +159,12 @@ public class HomeView extends VerticalLayout {
                     final var message = new MessageEntity(
                             this.currentPerson,
                             "facebook",
-                            query
-                    );
+                            query);
                     this.messageService.update(message);
 
                     getUI().ifPresent(ui -> ui.getPage().executeJs(
-                            "window.open($0, '_blank')", query
-                    ));
-                }
-        );
+                            "window.open($0, '_blank')", query));
+                });
         styleDialogButton(callHelpOnFacebookButton.getElement());
         callHelpOnFacebookButton.setEnabled(false);
 
@@ -180,15 +177,12 @@ public class HomeView extends VerticalLayout {
                     final var message = new MessageEntity(
                             this.currentPerson,
                             "whatsapp",
-                            query
-                    );
+                            query);
                     this.messageService.update(message);
 
                     getUI().ifPresent(ui -> ui.getPage().executeJs(
-                            "window.open($0, '_blank')", query
-                    ));
-                }
-        );
+                            "window.open($0, '_blank')", query));
+                });
         styleDialogButton((callHelpOnWhatsAppButton.getElement()));
 
         final var callHelpOnSmsIcon = new Image("https://www.svgrepo.com/show/375147/sms.svg", "SMS");
@@ -200,28 +194,23 @@ public class HomeView extends VerticalLayout {
                     final var message = new MessageEntity(
                             this.currentPerson,
                             "sms",
-                            query
-                    );
+                            query);
                     this.messageService.update(message);
 
                     getUI().ifPresent(ui -> ui.getPage().executeJs(
-                            "window.open($0, '_blank')", query
-                    ));
-                }
-        );
+                            "window.open($0, '_blank')", query));
+                });
         styleDialogButton(callHelpOnSmsButton.getElement());
 
         headerLayout.add(
                 callHelpOnTwitterButton,
                 callHelpOnFacebookButton,
                 callHelpOnWhatsAppButton,
-                callHelpOnSmsButton
-        );
+                callHelpOnSmsButton);
 
         add(
                 headerLayout,
-                footerButtonsLayout
-        );
+                footerButtonsLayout);
 
         setSizeFull();
 
@@ -246,8 +235,7 @@ public class HomeView extends VerticalLayout {
         styleInitialDialogLayout(initialDialogLayout);
 
         initialDialog.add(
-                initialDialogLayout
-        );
+                initialDialogLayout);
 
         final var initialDialogHeader = new HorizontalLayout();
         styleInitialDialogHeader(initialDialogHeader);
@@ -261,8 +249,7 @@ public class HomeView extends VerticalLayout {
         initialDialogLayout.add(
                 initialDialogHeader,
                 initialDialogBody,
-                initialDialogFooter
-        );
+                initialDialogFooter);
 
         final var initialDialogHeaderLabel = new Label("Yardım Çağır");
         styleInitialDialogHeaderLabel(initialDialogHeaderLabel);
@@ -285,7 +272,8 @@ public class HomeView extends VerticalLayout {
             initialDialogPhoneField.setErrorMessage("");
             initialDialogPhoneField.setRequired(true);
             initialDialogPhoneField.setRequiredIndicatorVisible(true);
-            if (initialDialogPhoneField.getValue().length() == 11 || initialDialogPhoneField.getValue().length() == 13) {
+            if (initialDialogPhoneField.getValue().length() == 11
+                    || initialDialogPhoneField.getValue().length() == 13) {
 
                 if (initialDialogPhoneField.getValue().length() == 11) {
                     initialDialogPhoneField.setValue("+90" + initialDialogPhoneField.getValue());
@@ -314,7 +302,8 @@ public class HomeView extends VerticalLayout {
                     this.currentPerson.setLongitude(geoLocation.getValue().getLongitude());
                     // set an emergency avatar image
                     this.currentPerson.setImageUrl("https://i.imgur.com/1J8wv1M.png");
-                    this.currentPerson.setRegisteredAt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
+                    this.currentPerson.setRegisteredAt(
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")));
                     this.currentPerson.setSessionId(VaadinSession.getCurrent().getSession().getId());
                     // save the person to the database
                     this.currentPerson = personService.update(this.currentPerson);
@@ -329,11 +318,50 @@ public class HomeView extends VerticalLayout {
             } else {
                 initialDialogPhoneField.setErrorMessage("Lütfen geçerli bir telefon numarası giriniz");
             }
+
         });
 
         add(initialDialog);
         initialDialog.open();
 
+    }
+
+    private void bindMapData() {
+        Map<PersonDto, List<RequirementDto>> reqs = requirementService.getRequirementsGroupedByPerson();
+        for (PersonDto person : reqs.keySet()) {
+
+            final var tagText = "Sorgu: " + person.getLatitude() + ", " + person.getLongitude()
+                    + " konumundaki kullanici bilgileri sorgulandi.";
+            final var markerMyCoordinates = new LMarker(person.getLatitude(), person.getLongitude(), tagText);
+
+            map.addMarkerClickListener(event -> {
+
+                final var dialog = new Dialog();
+                final var closeButton = new Button(VaadinIcon.CLOSE_SMALL.create(), closeProfileView -> {
+                    dialog.close();
+                });
+
+                final var reqsAsString = reqs.get(person).stream().map(req -> req.getItem().toString())
+                        .reduce((s1, s2) -> s1 + ", " + s2).orElse("");
+
+                // Add the user profile layout to the dialog
+                final var profileLayout = new ProfileLayout(
+                        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
+                        person.getFirstName() + " " + person.getLastName(),
+                        person.getPhone(),
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
+                        reqsAsString);
+
+                dialog.add(
+                        closeButton,
+                        profileLayout);
+
+                dialog.open();
+                add(dialog);
+            });
+
+            map.addLComponents(markerMyCoordinates);
+        }
     }
 
     private void seedItems() {
@@ -402,27 +430,22 @@ public class HomeView extends VerticalLayout {
                 this.pet,
                 this.hygiene,
                 this.medicine,
-                this.other
-        );
+                this.other);
 
         dialog.open();
 
         add(
-                dialog
-        );
+                dialog);
 
         icoClose.addClickListener(onCloseClickEvent -> {
             boolean updated = requirementService.updateBySessionIdOrPersonId(
                     currentPerson.getId(),
                     VaadinSession.getCurrent().getSession().getId(),
-                    getAllSelectedItems()
-            );
+                    getAllSelectedItems());
 
             if (updated) {
                 Notification.show(
-                        "İhtiyaçlarınız başarıyla güncellendi."
-                        , 5000, Notification.Position.TOP_CENTER
-                );
+                        "İhtiyaçlarınız başarıyla güncellendi.", 5000, Notification.Position.TOP_CENTER);
             } else {
                 setRequirements();
             }
@@ -433,31 +456,29 @@ public class HomeView extends VerticalLayout {
 
     private List<ItemEntity> getAllSelectedItems() {
         return Stream.of(
-                        this.shelter,
-                        this.nutrition,
-                        this.clothes,
-                        this.baby,
-                        this.disabled,
-                        this.elderly,
-                        this.pet,
-                        this.hygiene,
-                        this.medicine,
-                        this.other
-                ).map(MultiSelectComboBox::getSelectedItems)
+                this.shelter,
+                this.nutrition,
+                this.clothes,
+                this.baby,
+                this.disabled,
+                this.elderly,
+                this.pet,
+                this.hygiene,
+                this.medicine,
+                this.other).map(MultiSelectComboBox::getSelectedItems)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }
 
     private String getRequirements() {
         final var reqOneLiner = Stream.of(
-                        this.shelter,
-                        this.nutrition,
-                        this.clothes,
-                        this.disabled,
-                        this.pet,
-                        this.hygiene,
-                        this.other
-                ).map(MultiSelectComboBox::getSelectedItems)
+                this.shelter,
+                this.nutrition,
+                this.clothes,
+                this.disabled,
+                this.pet,
+                this.hygiene,
+                this.other).map(MultiSelectComboBox::getSelectedItems)
                 .flatMap(Collection::stream)
                 .map(ItemEntity::getTitle)
                 .collect(Collectors.joining(","));
@@ -480,17 +501,16 @@ public class HomeView extends VerticalLayout {
         final var selectedOtherItems = this.other.getSelectedItems();
 
         final var selectedItems = Stream.of(
-                        selectedShelterItems,
-                        selectedNutritionItems,
-                        selectedClothesItems,
-                        selectedBabyItems,
-                        selectedDisabledItems,
-                        selectedElderlyItems,
-                        selectedPetItems,
-                        selectedHygieneItems,
-                        selectedMedicineItems,
-                        selectedOtherItems
-                ).flatMap(Collection::stream)
+                selectedShelterItems,
+                selectedNutritionItems,
+                selectedClothesItems,
+                selectedBabyItems,
+                selectedDisabledItems,
+                selectedElderlyItems,
+                selectedPetItems,
+                selectedHygieneItems,
+                selectedMedicineItems,
+                selectedOtherItems).flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
         for (ItemEntity item : selectedItems) {
@@ -525,14 +545,22 @@ public class HomeView extends VerticalLayout {
         }
     }
 
-    private void getCurrentLocation(LMap map) {
+    private void getAllPeopleLocation() {
+        bindMapData();
+    }
+
+    private void getCurrentLocation() {
 
         if (findMeClickCount.incrementAndGet() == 1) {
-            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+            map.setCenter(
+                    new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(),
+                    this.geoLocation.getValue().getLongitude(), 8));
 
-            final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", " + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
-            final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), tagText);
+            final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", "
+                    + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+            final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(),
+                    this.geoLocation.getValue().getLongitude(), tagText);
 
             map.addMarkerClickListener(event -> {
 
@@ -547,13 +575,11 @@ public class HomeView extends VerticalLayout {
                         this.currentPerson.getFirstName() + " " + this.currentPerson.getLastName(),
                         this.currentPerson.getPhone(),
                         DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").format(LocalDateTime.now()),
-                        getRequirements()
-                );
+                        getRequirements());
 
                 dialog.add(
                         closeButton,
-                        profileLayout
-                );
+                        profileLayout);
 
                 dialog.open();
                 add(dialog);
@@ -561,8 +587,10 @@ public class HomeView extends VerticalLayout {
 
             map.addLComponents(markerMyCoordinates);
         } else {
-            map.setCenter(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
-            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude(), 8));
+            map.setCenter(
+                    new LCenter(this.geoLocation.getValue().getLatitude(), this.geoLocation.getValue().getLongitude()));
+            map.setViewPoint(new LCenter(this.geoLocation.getValue().getLatitude(),
+                    this.geoLocation.getValue().getLongitude(), 8));
         }
 
     }
