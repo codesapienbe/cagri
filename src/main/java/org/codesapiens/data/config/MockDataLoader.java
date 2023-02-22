@@ -137,8 +137,9 @@ public class MockDataLoader implements CommandLineRunner {
             person.setImageUrl(avatar);
             person.setPhone("0532" + random.nextInt(9999999) + 1000000);
             // generate a random geo location within Türkiye (37.000000, 35.321333) and (42.000000, 44.000000)
-            person.setLatitude(37.000000 + (42.000000 - 37.000000) * random.nextDouble());
-            person.setLongitude(35.321333 + (44.000000 - 35.321333) * random.nextDouble());
+            // add at least 1000 meters to the latitude and longitude to avoid the same location
+            person.setLatitude(random.nextDouble() * (42.000000 - 37.000000) + 37.000000 + 0.010000);
+            person.setLongitude(random.nextDouble() * (44.000000 - 35.321333) + 35.321333 + 0.010000);
             person.setRegisteredAt(NOW);
             people.add(person);
         }
