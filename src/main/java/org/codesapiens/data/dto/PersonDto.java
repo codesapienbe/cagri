@@ -1,21 +1,20 @@
-package org.codesapiens.data.entity;
-
+package org.codesapiens.data.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.codesapiens.data.entity.PersonEntity;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-@Entity
-@Table(name = "people")
-public class PersonEntity extends AbstractEntity {
+public class PersonDto {
 
     private String firstName;
 
     private String lastName;
 
-    @Column(nullable = false, unique = true)
     private String phone;
 
     private Double latitude;
@@ -28,25 +27,51 @@ public class PersonEntity extends AbstractEntity {
 
     private String sessionId;
 
-    public PersonEntity() {
+    public static PersonDto fromEntity(PersonEntity entity) {
+        final var dto = new PersonDto();
+        dto.setFirstName(entity.getFirstName());
+        dto.setLastName(entity.getLastName());
+        dto.setPhone(entity.getPhone());
+        dto.setLatitude(entity.getLatitude());
+        dto.setLongitude(entity.getLongitude());
+        dto.setImageUrl(entity.getImageUrl());
+        dto.setRegisteredAt(entity.getRegisteredAt());
+        dto.setSessionId(entity.getSessionId());
+        return dto;
     }
 
-    public PersonEntity(String firstName, String lastName, String phone) {
+    public PersonEntity toEntity() {
+        final var entity = new PersonEntity();
+        entity.setFirstName(this.getFirstName());
+        entity.setLastName(this.getLastName());
+        entity.setPhone(this.getPhone());
+        entity.setLatitude(this.getLatitude());
+        entity.setLongitude(this.getLongitude());
+        entity.setImageUrl(this.getImageUrl());
+        entity.setRegisteredAt(this.getRegisteredAt());
+        entity.setSessionId(this.getSessionId());
+        return entity;
+    }
+
+    public PersonDto() {
+    }
+
+    public PersonDto(String firstName, String lastName, String phone) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
     }
 
-    public PersonEntity(String firstName, String lastName, String phone, String imageUrl) {
+    public PersonDto(String firstName, String lastName, String phone, String imageUrl) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
         this.imageUrl = imageUrl;
     }
 
-    public PersonEntity(String firstName, String lastName, String phone,
-                        String sessionId, String registeredAt,
-                        Double latitude, Double longitude) {
+    public PersonDto(String firstName, String lastName, String phone,
+            String sessionId, String registeredAt,
+            Double latitude, Double longitude) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -55,7 +80,6 @@ public class PersonEntity extends AbstractEntity {
         this.longitude = longitude;
         this.registeredAt = registeredAt;
     }
-
 
     public String getFirstName() {
         return firstName;
@@ -80,7 +104,6 @@ public class PersonEntity extends AbstractEntity {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-
 
     public Double getLatitude() {
         return latitude;
@@ -151,10 +174,13 @@ public class PersonEntity extends AbstractEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PersonEntity)) return false;
-        if (!super.equals(o)) return false;
-        PersonEntity that = (PersonEntity) o;
+        if (this == o)
+            return true;
+        if (!(o instanceof PersonDto))
+            return false;
+        if (!super.equals(o))
+            return false;
+        PersonDto that = (PersonDto) o;
         return getPhone().equals(that.getPhone());
     }
 

@@ -1,33 +1,45 @@
-package org.codesapiens.data.entity;
+package org.codesapiens.data.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import org.codesapiens.data.entity.ItemEntity;
+
 import javax.validation.constraints.NotEmpty;
 import java.util.Objects;
 
-@Entity
-@Table(name = "items")
-public class ItemEntity extends AbstractEntity {
+public class ItemDto {
 
-    @NotEmpty
-    @Column(nullable = false, unique = true)
     private String title;
 
     private String description;
 
-    public ItemEntity() {
+    public static ItemDto fromEntity(ItemEntity entity) {
+        final var dto = new ItemDto();
+        dto.setTitle(entity.getTitle());
+        dto.setDescription(entity.getDescription());
+        dto.setCategory(entity.getCategory());
+        return dto;
     }
 
-    public ItemEntity(String title) {
-        this.title = title;
-        this.description = title;
-        this.category = "Tanımsız";
+    public ItemEntity toEntity() {
+        final var entity = new ItemEntity();
+        entity.setTitle(this.getTitle());
+        entity.setDescription(this.getDescription());
+        entity.setCategory(this.getCategory());
+        return entity;
     }
 
-    public ItemEntity(String title, String category) {
-        this.title = title;
-        this.category = category;
+    public ItemDto() {
+        this.setCategory("Tanımsız");
+    }
+
+    public ItemDto(String title) {
+        this();
+        this.setTitle(title);
+        this.setDescription(title);
+    }
+
+    public ItemDto(String title, String category) {
+        this(title);
+        this.setCategory(category);
     }
 
     public String getTitle() {
@@ -60,9 +72,9 @@ public class ItemEntity extends AbstractEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ItemEntity)) return false;
+        if (!(o instanceof ItemDto)) return false;
         if (!super.equals(o)) return false;
-        ItemEntity that = (ItemEntity) o;
+        ItemDto that = (ItemDto) o;
         return getTitle().equals(that.getTitle());
     }
 
@@ -73,10 +85,6 @@ public class ItemEntity extends AbstractEntity {
 
     @Override
     public String toString() {
-        return "{" +
-                "\"title\":'" + title + '\'' +
-                ", \"description\":'" + description + '\'' +
-                ", \"category\":'" + category + '\'' +
-                "}";
+        return this.getTitle();
     }
 }

@@ -1,37 +1,54 @@
-package org.codesapiens.data.entity;
+package org.codesapiens.data.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.util.Objects;
 
-@Entity
-@Table(name = "tags")
-public class TagEntity extends AbstractEntity {
+import org.codesapiens.data.entity.TagEntity;
 
-    @Column(nullable = false, unique = true)
+public class TagDto {
+
     private String title;
 
-    @Column(unique = true)
     private String url;
 
     private Character symbol;
 
-    public TagEntity() {
+    public static TagDto fromEntity(TagEntity entity) {
+        final var dto = new TagDto();
+        dto.setTitle(entity.getTitle());
+        dto.setUrl(entity.getUrl());
+        dto.setSymbol(entity.getSymbol());
+        return dto;
+    }
+
+    public TagEntity toEntity() {
+        final var entity = new TagEntity();
+        entity.setTitle(this.getTitle());
+        entity.setUrl(this.getUrl());
+        entity.setSymbol(this.getSymbol());
+        return entity;
+    }
+
+    public TagDto(String title, String url) {
+        this.title = title;
+        this.url = url;
+        this.symbol = '#';
+    }
+
+    public TagDto() {
 
     }
 
-    public TagEntity(String title) {
+    public TagDto(String title) {
         this.title = title;
         this.symbol = '#';
     }
 
-    public TagEntity(String title, Character symbol) {
+    public TagDto(String title, Character symbol) {
         this.title = title;
         this.symbol = symbol;
     }
 
-    public TagEntity(String title, String url, Character symbol) {
+    public TagDto(String title, String url, Character symbol) {
         this.title = title;
         this.url = url;
         this.symbol = symbol;
@@ -63,10 +80,13 @@ public class TagEntity extends AbstractEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TagEntity)) return false;
-        if (!super.equals(o)) return false;
-        TagEntity that = (TagEntity) o;
+        if (this == o)
+            return true;
+        if (!(o instanceof TagDto))
+            return false;
+        if (!super.equals(o))
+            return false;
+        TagDto that = (TagDto) o;
         return getTitle().equals(that.getTitle()) && Objects.equals(getUrl(), that.getUrl());
     }
 

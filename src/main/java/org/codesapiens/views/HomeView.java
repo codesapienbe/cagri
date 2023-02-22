@@ -38,7 +38,7 @@ import static org.codesapiens.data.service.StyleUtils.*;
 
 
 @PageTitle("YARDIM ÇAĞIR!")
-@Route("")
+@Route("home")
 public class HomeView extends VerticalLayout {
 
     private static final String BASE_URL = "https://cagriapp.com/";

@@ -1,9 +1,11 @@
 package org.codesapiens.data.entity;
 
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.codesapiens.data.dto.PersonDto;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -28,6 +30,32 @@ public class PersonEntity extends AbstractEntity {
 
     private String sessionId;
 
+    public static PersonEntity fromDto(PersonDto dto) {
+        final var entity = new PersonEntity();
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
+        entity.setPhone(dto.getPhone());
+        entity.setLatitude(dto.getLatitude());
+        entity.setLongitude(dto.getLongitude());
+        entity.setImageUrl(dto.getImageUrl());
+        entity.setRegisteredAt(dto.getRegisteredAt());
+        entity.setSessionId(dto.getSessionId());
+        return entity;
+    }
+
+    public PersonDto toDto() {
+        final var dto = new PersonDto();
+        dto.setFirstName(this.getFirstName());
+        dto.setLastName(this.getLastName());
+        dto.setPhone(this.getPhone());
+        dto.setLatitude(this.getLatitude());
+        dto.setLongitude(this.getLongitude());
+        dto.setImageUrl(this.getImageUrl());
+        dto.setRegisteredAt(this.getRegisteredAt());
+        dto.setSessionId(this.getSessionId());
+        return dto;
+    }
+
     public PersonEntity() {
     }
 
@@ -45,8 +73,8 @@ public class PersonEntity extends AbstractEntity {
     }
 
     public PersonEntity(String firstName, String lastName, String phone,
-                        String sessionId, String registeredAt,
-                        Double latitude, Double longitude) {
+            String sessionId, String registeredAt,
+            Double latitude, Double longitude) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -55,7 +83,6 @@ public class PersonEntity extends AbstractEntity {
         this.longitude = longitude;
         this.registeredAt = registeredAt;
     }
-
 
     public String getFirstName() {
         return firstName;
@@ -80,7 +107,6 @@ public class PersonEntity extends AbstractEntity {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-
 
     public Double getLatitude() {
         return latitude;
@@ -151,9 +177,12 @@ public class PersonEntity extends AbstractEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PersonEntity)) return false;
-        if (!super.equals(o)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof PersonEntity))
+            return false;
+        if (!super.equals(o))
+            return false;
         PersonEntity that = (PersonEntity) o;
         return getPhone().equals(that.getPhone());
     }

@@ -1,4 +1,4 @@
-package org.codesapiens.data.entity;
+package org.codesapiens.data.dto;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -6,42 +6,58 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+
+import org.codesapiens.data.entity.RequirementEntity;
+
 import java.util.Objects;
 
-@Entity
-@Table(name = "requirements")
-public class RequirementEntity extends AbstractEntity {
+public class RequirementDto {
 
-    @Column(nullable = false)
     private String sessionId;
 
-    @ManyToOne(optional = false)
-    private ItemEntity item;
+    private ItemDto item;
 
     private Double quantity;
 
-    @ManyToOne(optional = false)
-    private PersonEntity person;
+    private PersonDto person;
 
-    @Min(1)
-    @Max(10)
     private Integer priority;
 
     private String description;
 
-    public ItemEntity getItem() {
+    public static RequirementDto fromEntity(RequirementEntity entity) {
+        final var dto = new RequirementDto();
+        dto.setItem(ItemDto.fromEntity(entity.getItem()));
+        dto.setPerson(PersonDto.fromEntity(entity.getPerson()));
+        dto.setQuantity(entity.getQuantity());
+        dto.setPriority(entity.getPriority());
+        dto.setDescription(entity.getDescription());
+        return dto;
+    }
+
+    public RequirementEntity toEntity() {
+        final var entity = new RequirementEntity();
+        entity.setItem(this.getItem().toEntity());
+        entity.setPerson(this.getPerson().toEntity());
+        entity.setQuantity(this.getQuantity());
+        entity.setPriority(this.getPriority());
+        entity.setDescription(this.getDescription());
+        return entity;
+    }
+
+    public ItemDto getItem() {
         return item;
     }
 
-    public void setItem(ItemEntity item) {
+    public void setItem(ItemDto item) {
         this.item = item;
     }
 
-    public PersonEntity getPerson() {
+    public PersonDto getPerson() {
         return person;
     }
 
-    public void setPerson(PersonEntity person) {
+    public void setPerson(PersonDto person) {
         this.person = person;
     }
 
@@ -79,10 +95,13 @@ public class RequirementEntity extends AbstractEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RequirementEntity)) return false;
-        if (!super.equals(o)) return false;
-        RequirementEntity that = (RequirementEntity) o;
+        if (this == o)
+            return true;
+        if (!(o instanceof RequirementDto))
+            return false;
+        if (!super.equals(o))
+            return false;
+        RequirementDto that = (RequirementDto) o;
         return getItem().equals(that.getItem()) && getPerson().equals(that.getPerson());
     }
 

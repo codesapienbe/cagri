@@ -4,6 +4,9 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
+
+import org.codesapiens.data.dto.ItemDto;
+
 import java.util.Objects;
 
 @Entity
@@ -16,18 +19,35 @@ public class ItemEntity extends AbstractEntity {
 
     private String description;
 
+    public static ItemEntity fromDto(ItemDto dto) {
+        final var entity = new ItemEntity();
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
+        entity.setCategory(dto.getCategory());
+        return entity;
+    }
+
+    public ItemDto toDto() {
+        final var dto = new ItemDto();
+        dto.setTitle(this.getTitle());
+        dto.setDescription(this.getDescription());
+        dto.setCategory(this.getCategory());
+        return dto;
+    }
+
     public ItemEntity() {
+        this.setCategory("Tanımsız");
     }
 
     public ItemEntity(String title) {
-        this.title = title;
-        this.description = title;
-        this.category = "Tanımsız";
+        this();
+        this.setTitle(title);
+        this.setDescription(title);
     }
 
     public ItemEntity(String title, String category) {
-        this.title = title;
-        this.category = category;
+        this(title);
+        this.setCategory(category);
     }
 
     public String getTitle() {

@@ -5,6 +5,10 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import org.codesapiens.data.dto.MessageDto;
+import org.codesapiens.data.dto.PersonDto;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
@@ -25,6 +29,26 @@ public class MessageEntity extends AbstractEntity {
     private LocalDate date;
 
     private LocalTime time;
+
+    public static MessageEntity fromDto(MessageDto dto) {
+        final var entity = new MessageEntity();
+        entity.setSender(PersonEntity.fromDto(dto.getSender()));
+        entity.setChannel(dto.getChannel());
+        entity.setText(dto.getText());
+        entity.setDate(dto.getDate());
+        entity.setTime(dto.getTime());
+        return entity;
+    }
+
+    public MessageDto toDto() {
+        final var dto = new MessageDto();
+        dto.setSender(PersonDto.fromEntity(this.getSender()));
+        dto.setChannel(this.getChannel());
+        dto.setText(this.getText());
+        dto.setDate(this.getDate());
+        dto.setTime(this.getTime());
+        return dto;
+    }
 
     public LocalDate getDate() {
         return date;

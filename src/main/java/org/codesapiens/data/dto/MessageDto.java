@@ -1,30 +1,48 @@
-package org.codesapiens.data.entity;
+package org.codesapiens.data.dto;
 
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import org.codesapiens.data.entity.MessageEntity;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
 
-@Entity
-@Table(name = "messages")
-public class MessageEntity extends AbstractEntity {
+public class MessageDto {
 
-    @NotNull
-    @ManyToOne(optional = false)
-    private PersonEntity sender;
+    private PersonDto sender;
 
-    @NotNull
     private String channel;
-    @Lob
+
     private String text;
 
     private LocalDate date;
 
     private LocalTime time;
+
+    public static MessageDto fromEntity(MessageEntity entity) {
+        final var dto = new MessageDto();
+        dto.setSender(PersonDto.fromEntity(entity.getSender()));
+        dto.setChannel(entity.getChannel());
+        dto.setText(entity.getText());
+        dto.setDate(entity.getDate());
+        dto.setTime(entity.getTime());
+        return dto;
+    }
+
+    public MessageEntity toEntity() {
+        final var entity = new MessageEntity();
+        entity.setSender(this.getSender().toEntity());
+        entity.setChannel(this.getChannel());
+        entity.setText(this.getText());
+        entity.setDate(this.getDate());
+        entity.setTime(this.getTime());
+        return entity;
+    }
 
     public LocalDate getDate() {
         return date;
@@ -42,20 +60,20 @@ public class MessageEntity extends AbstractEntity {
         this.time = time;
     }
 
-    public MessageEntity() {
+    public MessageDto() {
     }
 
-    public MessageEntity(PersonEntity sender, String channel, String text) {
+    public MessageDto(PersonDto sender, String channel, String text) {
         this.sender = sender;
         this.channel = channel;
         this.text = text;
     }
 
-    public PersonEntity getSender() {
+    public PersonDto getSender() {
         return sender;
     }
 
-    public void setSender(PersonEntity sender) {
+    public void setSender(PersonDto sender) {
         this.sender = sender;
     }
 
@@ -77,9 +95,11 @@ public class MessageEntity extends AbstractEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MessageEntity)) return false;
-        MessageEntity that = (MessageEntity) o;
+        if (this == o)
+            return true;
+        if (!(o instanceof MessageDto))
+            return false;
+        MessageDto that = (MessageDto) o;
         return Objects.equals(sender, that.sender) &&
                 Objects.equals(channel, that.channel) &&
                 Objects.equals(text, that.text);
@@ -94,6 +114,5 @@ public class MessageEntity extends AbstractEntity {
     public String toString() {
         return this.getText();
     }
-
 
 }

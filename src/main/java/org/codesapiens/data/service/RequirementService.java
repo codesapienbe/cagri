@@ -7,9 +7,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import java.util.stream.Collectors;
+
+import java.util.Map;
+
+import org.codesapiens.data.dto.PersonDto;
+import org.codesapiens.data.dto.RequirementDto;
+import org.codesapiens.data.entity.PersonEntity;
+import org.codesapiens.data.service.PersonRepository;
 
 @Service
 public class RequirementService {
@@ -29,6 +39,13 @@ public class RequirementService {
 
     public List<RequirementEntity> getByPersonId(UUID personId) {
         return requirementRepository.findAllByPerson_Id(personId);
+    }
+
+    public Map<PersonDto, List<RequirementDto>> getRequirementsGroupedByPerson() {
+        return requirementRepository.findAll()
+                .stream()
+                .map(RequirementEntity::toDto)
+                .collect(Collectors.groupingBy(RequirementDto::getPerson));
     }
 
     public List<RequirementEntity> get(String sessionId) {
@@ -68,7 +85,6 @@ public class RequirementService {
             return true;
         }
 
-
     }
 
     public void delete(UUID id) {
@@ -86,15 +102,13 @@ public class RequirementService {
     public long countByItem(String title, String category) {
         return requirementRepository.countByItem_TitleAndItem_Category(
                 title,
-                category
-        );
+                category);
     }
 
     public long countByItem(UUID itemId, String category) {
         return requirementRepository.countByItem_IdAndItem_Category(
                 itemId,
-                category
-        );
+                category);
     }
 
 }
