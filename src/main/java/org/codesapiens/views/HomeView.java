@@ -119,7 +119,7 @@ public class HomeView extends VerticalLayout {
         });
         styleTextField(phoneField);
 
-        final var btnRequirements = new Button("İhtiyaçlarım");
+        final var btnRequirements = new Button("Ihtiyaclarim");
         // background Turquoise
         footerButton(btnRequirements, "right", "#00bcd4");
 
@@ -136,7 +136,7 @@ public class HomeView extends VerticalLayout {
         styleIcon(callHelpOnTwitterIcon);
         final var callHelpOnTwitterButton = new Button(callHelpOnTwitterIcon, e -> {
             final var hashtags = "&hashtags=" + getRequirements();
-            final var query = "https://twitter.com/intent/tweet?text=Benim ihtiyaçlarım: " + hashtags
+            final var query = "https://twitter.com/intent/tweet?text=Benim ihtiyaclarim: " + hashtags
                     + "&url=https://cagriapp.com";
 
             final var message = new MessageEntity(
@@ -172,8 +172,8 @@ public class HomeView extends VerticalLayout {
         styleIcon(callHelpOnWhatsAppIcon);
         final var callHelpOnWhatsAppButton = new Button(callHelpOnWhatsAppIcon,
                 e -> {
-                    final var hashtags = "Yardımınıza ihtiyacım var." + getRequirements();
-                    final var query = "https://wa.me?text=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
+                    final var hashtags = "Yardiminiza ihtiyacim var." + getRequirements();
+                    final var query = "https://wa.me?text=CAGRI !!! " + hashtags + " https://cagriapp.com";
                     final var message = new MessageEntity(
                             this.currentPerson,
                             "whatsapp",
@@ -190,7 +190,7 @@ public class HomeView extends VerticalLayout {
         final var callHelpOnSmsButton = new Button(callHelpOnSmsIcon,
                 e -> {
                     final var hashtags = "&hashtags" + getRequirements();
-                    final var query = "sms:?body=ÇAĞRI !!! " + hashtags + " https://cagriapp.com";
+                    final var query = "sms:?body=CAGRI !!! " + hashtags + " https://cagriapp.com";
                     final var message = new MessageEntity(
                             this.currentPerson,
                             "sms",
@@ -251,11 +251,11 @@ public class HomeView extends VerticalLayout {
                 initialDialogBody,
                 initialDialogFooter);
 
-        final var initialDialogHeaderLabel = new Label("Yardım Çağır");
+        final var initialDialogHeaderLabel = new Label("Yardim Cagir");
         styleInitialDialogHeaderLabel(initialDialogHeaderLabel);
         initialDialogHeader.add(initialDialogHeaderLabel);
 
-        final var initialDialogBodyLabel = new Label("Telefon numaranızı giriniz");
+        final var initialDialogBodyLabel = new Label("Telefon numaranizi giriniz");
         styleInitialDialogBodyLabel(initialDialogBodyLabel);
         initialDialogBody.add(initialDialogBodyLabel);
 
@@ -296,7 +296,7 @@ public class HomeView extends VerticalLayout {
                 } else {
                     this.currentPerson = new PersonEntity();
                     this.currentPerson.setPhone(initialDialogPhoneField.getValue());
-                    this.currentPerson.setFirstName("İsim");
+                    this.currentPerson.setFirstName("Isim");
                     this.currentPerson.setLastName("Soyisim");
                     this.currentPerson.setLatitude(geoLocation.getValue().getLatitude());
                     this.currentPerson.setLongitude(geoLocation.getValue().getLongitude());
@@ -316,8 +316,10 @@ public class HomeView extends VerticalLayout {
 
                 initialDialog.close();
             } else {
-                initialDialogPhoneField.setErrorMessage("Lütfen geçerli bir telefon numarası giriniz");
+                initialDialogPhoneField.setErrorMessage("Lutfen gecerli bir telefon numarasi giriniz");
             }
+
+            getAllPeopleLocation();
 
         });
 
@@ -327,7 +329,7 @@ public class HomeView extends VerticalLayout {
     }
 
     private void bindMapData() {
-        Map<PersonDto, List<RequirementDto>> reqs = requirementService.getRequirementsGroupedByPerson();
+        final var reqs = requirementService.getRequirementsGroupedByPerson();
         for (PersonDto person : reqs.keySet()) {
 
             final var tagText = "Sorgu: " + person.getLatitude() + ", " + person.getLongitude()
@@ -369,17 +371,17 @@ public class HomeView extends VerticalLayout {
         final var itemsGroupedByCategory = this.itemService.list(PageRequest.of(0, 1000)).stream()
                 .collect(Collectors.groupingBy(ItemEntity::getCategory));
 
-        List<ItemEntity> shelterGroup = itemsGroupedByCategory.getOrDefault("Barınma", Collections.emptyList());
+        List<ItemEntity> shelterGroup = itemsGroupedByCategory.getOrDefault("Barinma", Collections.emptyList());
         this.shelter.setItems(shelterGroup);
-        styleMultiSelectComboBox(this.shelter, "Barınma");
+        styleMultiSelectComboBox(this.shelter, "Barinma");
 
-        List<ItemEntity> nutritionGroup = itemsGroupedByCategory.getOrDefault("Gıda", Collections.emptyList());
+        List<ItemEntity> nutritionGroup = itemsGroupedByCategory.getOrDefault("Gida", Collections.emptyList());
         this.nutrition.setItems(nutritionGroup);
-        styleMultiSelectComboBox(this.nutrition, "Gıda");
+        styleMultiSelectComboBox(this.nutrition, "Gida");
 
-        List<ItemEntity> clothGroup = itemsGroupedByCategory.getOrDefault("Kıyafet", Collections.emptyList());
+        List<ItemEntity> clothGroup = itemsGroupedByCategory.getOrDefault("Kiyafet", Collections.emptyList());
         this.clothes.setItems(clothGroup);
-        styleMultiSelectComboBox(this.clothes, "Kıyafet");
+        styleMultiSelectComboBox(this.clothes, "Kiyafet");
 
         List<ItemEntity> babyGroup = itemsGroupedByCategory.getOrDefault("Bebek", Collections.emptyList());
         this.baby.setItems(babyGroup);
@@ -389,9 +391,9 @@ public class HomeView extends VerticalLayout {
         this.disabled.setItems(disabledGroup);
         styleMultiSelectComboBox(this.disabled, "Engelli");
 
-        List<ItemEntity> elderlyGroup = itemsGroupedByCategory.getOrDefault("Yaşlı", Collections.emptyList());
+        List<ItemEntity> elderlyGroup = itemsGroupedByCategory.getOrDefault("Yasli", Collections.emptyList());
         this.elderly.setItems(elderlyGroup);
-        styleMultiSelectComboBox(this.elderly, "Yaşlı");
+        styleMultiSelectComboBox(this.elderly, "Yasli");
 
         List<ItemEntity> petGroup = itemsGroupedByCategory.getOrDefault("Evcil Hayvan", Collections.emptyList());
         this.pet.setItems(petGroup);
@@ -405,9 +407,9 @@ public class HomeView extends VerticalLayout {
         this.medicine.setItems(medicalGroup);
         styleMultiSelectComboBox(this.medicine, "Medikal");
 
-        List<ItemEntity> otherGroup = itemsGroupedByCategory.getOrDefault("Diğer", Collections.emptyList());
+        List<ItemEntity> otherGroup = itemsGroupedByCategory.getOrDefault("Diger", Collections.emptyList());
         this.other.setItems(otherGroup);
-        styleMultiSelectComboBox(this.other, "Diğer");
+        styleMultiSelectComboBox(this.other, "Diger");
     }
 
     private void onRequirementsClickEvent() {
@@ -445,7 +447,7 @@ public class HomeView extends VerticalLayout {
 
             if (updated) {
                 Notification.show(
-                        "İhtiyaçlarınız başarıyla güncellendi.", 5000, Notification.Position.TOP_CENTER);
+                        "Ihtiyaclariniz basariyla guncellendi.", 5000, Notification.Position.TOP_CENTER);
             } else {
                 setRequirements();
             }
@@ -519,7 +521,7 @@ public class HomeView extends VerticalLayout {
             newReq.setQuantity(1.00);
             newReq.setPriority(1);
             newReq.setSessionId(VaadinSession.getCurrent().getSession().getId());
-            newReq.setDescription("Açıklama");
+            newReq.setDescription("Aciklama");
 
             String phoneNumber = this.currentPerson.getPhone();
             if (this.personService.getByPhone(phoneNumber).isPresent()) {
@@ -533,7 +535,7 @@ public class HomeView extends VerticalLayout {
                 newPer.setLatitude(this.geoLocation.getValue().getLatitude());
                 newPer.setLongitude(this.geoLocation.getValue().getLongitude());
                 newPer.setImageUrl("https://i.ibb.co/0nZ3Z3T/unknown.png");
-                newPer.setFirstName("İsim");
+                newPer.setFirstName("Isim");
                 newPer.setLastName("Soyisim");
 
                 this.currentPerson = this.personService.update(newPer);
@@ -558,7 +560,7 @@ public class HomeView extends VerticalLayout {
                     this.geoLocation.getValue().getLongitude(), 8));
 
             final var tagText = "Sorgu: " + this.geoLocation.getValue().getLatitude() + ", "
-                    + this.geoLocation.getValue().getLongitude() + " konumundaki kullanıcı bilgileri sorgulandı";
+                    + this.geoLocation.getValue().getLongitude() + " konumundaki kullanici bilgileri sorgulandi";
             final var markerMyCoordinates = new LMarker(this.geoLocation.getValue().getLatitude(),
                     this.geoLocation.getValue().getLongitude(), tagText);
 
