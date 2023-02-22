@@ -130,16 +130,15 @@ public class MockDataLoader implements CommandLineRunner {
         final var random = new Random();
         final var people = new ArrayList<PersonEntity>();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 25; i++) {
             final var person = new PersonEntity();
             person.setFirstName("FirstName" + i);
             person.setLastName("LastName" + i);
             person.setImageUrl(avatar);
             person.setPhone("0532" + random.nextInt(9999999) + 1000000);
-            // generate a random geo location within Türkiye (37.000000, 35.321333) and (42.000000, 44.000000)
-            // add at least 1000 meters to the latitude and longitude to avoid the same location
-            person.setLatitude(random.nextDouble() * (42.000000 - 37.000000) + 37.000000 + 0.010000);
-            person.setLongitude(random.nextDouble() * (44.000000 - 35.321333) + 35.321333 + 0.010000);
+            // add 10.000 meters to the geolocation for each person
+            person.setLatitude(39.92077 + (i * 0.0001));
+            person.setLongitude(32.85411 + (i * 0.0001));
             person.setRegisteredAt(NOW);
             people.add(person);
         }
