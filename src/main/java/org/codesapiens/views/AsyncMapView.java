@@ -70,12 +70,12 @@ public class AsyncMapView extends VerticalLayout {
         this.messageService = messageService;
 
         // Kahramanmaraş geolocation
-        map.setCenter(new LCenter(37.585, 36.937));
-        map.setZoom(12);
-        map.setCenter(new LCenter(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude()));
-        map.setViewPoint(geoLocation.getValue() != null
+        map.setZoom(6);
+        var lCenter = geoLocation.getValue() != null
                 ? new LCenter(geoLocation.getValue().getLatitude(), geoLocation.getValue().getLongitude())
-                : new LCenter(37.585, 36.937));
+                : new LCenter(37.585, 36.937);
+        map.setCenter(lCenter);
+        map.setViewPoint(lCenter);
         map.setSizeFull();
         map.setTileLayer(new LTileLayer(BASE_URL, BASE_URL, 0));
 
