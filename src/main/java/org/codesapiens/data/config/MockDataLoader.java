@@ -125,7 +125,6 @@ public class MockDataLoader implements CommandLineRunner {
     }
 
     public void seedPeople() {
-        // Generate 10.000 people with random geolocation for each person and save them to DB using an Iterable
         final var avatar = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
         final var random = new Random();
         final var people = new ArrayList<PersonEntity>();
@@ -136,9 +135,9 @@ public class MockDataLoader implements CommandLineRunner {
             person.setLastName("LastName" + i);
             person.setImageUrl(avatar);
             person.setPhone("0532" + random.nextInt(9999999) + 1000000);
-            // add 10.000 meters to the geolocation for each person
-            person.setLatitude(39.92077 + (i * 0.0001));
-            person.setLongitude(32.85411 + (i * 0.0001));
+            // add 100 kilometers to the geolocation for each person
+            person.setLatitude(39.92077 + (i * 10));
+            person.setLongitude(32.85411 + (i * 1));
             person.setRegisteredAt(NOW);
             people.add(person);
         }
